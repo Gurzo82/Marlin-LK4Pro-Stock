@@ -73,9 +73,18 @@ namespace DGUS_Data {
     MMP01 = 3  // 0.01mm
   };
 
+  // jgbrown54 - Added EEPROM Actions tx3m
+  enum class EepromAction : uint8_t     {
+    // EEPROM
+    RESET = 1,
+    SAVE = 2,
+    LOAD = 3
+  };
+
+  // tx3m change to work as expected
   enum class FilamentMove : uint8_t {
-    RETRACT = 0,
-    EXTRUDE = 1
+    EXTRUDE = 0,
+    RETRACT = 1
   };
 
   enum class Axis : uint8_t {

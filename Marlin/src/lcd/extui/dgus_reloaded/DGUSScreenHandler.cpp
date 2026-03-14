@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * jgbrown54 - Added status messages for Save and Restore EEPROM
  */
 
 #include "../../../inc/MarlinConfigPre.h"
@@ -44,6 +45,7 @@ DGUS_Data::StepSize DGUSScreenHandler::offset_steps = DGUS_Data::StepSize::MMP1;
 DGUS_Data::StepSize DGUSScreenHandler::move_steps = DGUS_Data::StepSize::MM10;
 
 uint16_t DGUSScreenHandler::probing_icons[] = { 0, 0 };
+float DGUSScreenHandler::probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
 
 DGUS_Data::Extruder DGUSScreenHandler::filament_extruder = DGUS_Data::Extruder::CURRENT;
 uint16_t DGUSScreenHandler::filament_length = DGUS_DEFAULT_FILAMENT_LEN;
@@ -117,20 +119,22 @@ void DGUSScreenHandler::loop() {
   }
 
   if (current_screenID == DGUS_ScreenID::WAIT
-      && ((wait_continue && !wait_for_user) || (!wait_continue && isPrinterIdle()))
+      && ((wait_continue && !marlin.wait_for_user) || (!wait_continue && isPrinterIdle()))
   ) {
     moveToScreen(wait_return_screenID, true);
     return;
   }
 
-  if (current_screenID == DGUS_ScreenID::LEVELING_PROBING && isPrinterIdle()) {
-    dgus.playSound(3);
+  #if HAS_MESH
+    if (current_screenID == DGUS_ScreenID::LEVELING_PROBING && isPrinterIdle()) {
+      dgus.playSound(3);
 
-    setStatusMessage(ExtUI::getLevelingIsValid() ? GET_TEXT_F(DGUS_MSG_PROBING_SUCCESS) : GET_TEXT_F(DGUS_MSG_PROBING_FAILED));
+      setStatusMessage(ExtUI::getLevelingIsValid() ? GET_TEXT_F(DGUS_MSG_PROBING_SUCCESS) : GET_TEXT_F(DGUS_MSG_PROBING_FAILED));
 
-    moveToScreen(DGUS_ScreenID::LEVELING_AUTOMATIC);
-    return;
-  }
+      moveToScreen(DGUS_ScreenID::LEVELING_AUTOMATIC);
+      return;
+    }
+  #endif
 
   if (status_expire > 0 && ELAPSED(ms, status_expire)) {
     setStatusMessage(FPSTR(NUL_STR), 0);
@@ -170,6 +174,8 @@ void DGUSScreenHandler::userConfirmRequired(const char * const msg) {
 
 void DGUSScreenHandler::settingsReset() {
   dgus.setVolume(DGUS_DEFAULT_VOLUME);
+
+  DGUSDisplay::displayDimmed = false;  // tx3m
   dgus.setBrightness(DGUS_DEFAULT_BRIGHTNESS);
 
   if (!settings_ready) {
@@ -188,7 +194,11 @@ void DGUSScreenHandler::storeSettings(char *buff) {
   data.initialized = true;
   data.volume = dgus.getVolume();
   data.brightness = dgus.getBrightness();
-  data.abl_okay = (ExtUI::getLevelingActive() && ExtUI::getLevelingIsValid());
+
+  data.abl_okay = false;
+  #if HAS_MESH
+    data.abl_okay = (ExtUI::getLevelingActive() && ExtUI::getLevelingIsValid());
+  #endif
 
   memcpy(buff, &data, sizeof(data));
 }
@@ -201,17 +211,25 @@ void DGUSScreenHandler::loadSettings(const char *buff) {
   memcpy(&data, buff, sizeof(data));
 
   dgus.setVolume(data.initialized ? data.volume : DGUS_DEFAULT_VOLUME);
-  dgus.setBrightness(data.initialized ? data.brightness : DGUS_DEFAULT_BRIGHTNESS);
+
+  DGUSDisplay::displayDimmed = false;  // tx3m
+  // dgus.setBrightness(data.initialized ? data.brightness : DGUS_DEFAULT_BRIGHTNESS);
+  dgus.setBrightness(DGUSDisplay::getBrightness());
 
   if (data.initialized) {
+	leveling_active = false;
+	#if HAS_MESH
     leveling_active = (data.abl_okay && ExtUI::getLevelingIsValid());
     ExtUI::setLevelingActive(leveling_active);
+	#endif
   }
 }
 
 void DGUSScreenHandler::configurationStoreWritten(bool success) {
   if (!success)
     setStatusMessage(GET_TEXT_F(DGUS_MSG_WRITE_EEPROM_FAILED));
+  else
+    setStatusMessage(GET_TEXT_F(DGUS_MSG_EEPROM_SAVED));
 }
 
 void DGUSScreenHandler::configurationStoreRead(bool success) {
@@ -221,6 +239,7 @@ void DGUSScreenHandler::configurationStoreRead(bool success) {
   else if (!settings_ready) {
     settings_ready = true;
     ready();
+    setStatusMessage(GET_TEXT_F(DGUS_MSG_EEPROM_LOADED));
   }
 }
 
@@ -249,6 +268,24 @@ void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos) {
   triggerFullUpdate();
 }
 
+// tx3m added a version that takes also the zval as a param
+void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos, const float zval) {
+  if (current_screenID != DGUS_ScreenID::LEVELING_PROBING) {
+    if (current_screenID == DGUS_ScreenID::LEVELING_AUTOMATIC)
+      triggerFullUpdate();
+    return;
+  }
+
+  probing_values[xpos][ypos] = zval;
+  uint8_t point = ypos * GRID_MAX_POINTS_X + xpos;
+  probing_icons[point < 16 ? 0 : 1] |= (1U << (point % 16));
+
+  if (xpos >= GRID_MAX_POINTS_X - 1 && ypos >= GRID_MAX_POINTS_Y - 1 && !ExtUI::getLevelingIsValid())
+    probing_icons[0] = probing_icons[1] = 0;
+
+  triggerFullUpdate();
+}
+
 void DGUSScreenHandler::printTimerStarted() {
   triggerScreenChange(DGUS_ScreenID::PRINT_STATUS);
 }
@@ -265,6 +302,10 @@ void DGUSScreenHandler::printTimerStopped() {
   dgus.playSound(3);
 
   triggerScreenChange(DGUS_ScreenID::PRINT_FINISHED);
+}
+
+// tx3m
+void DGUSScreenHandler::printFinished() {
 }
 
 void DGUSScreenHandler::filamentRunout(const ExtUI::extruder_t extruder) {
@@ -332,6 +373,95 @@ void DGUSScreenHandler::filamentRunout(const ExtUI::extruder_t extruder) {
   }
 
 #endif // HAS_PID_HEATING
+
+
+// Pause message - equivalent of ui.pause_show_message() tx3m
+void DGUSScreenHandler::showPauseMessage(PauseMessage message, PauseMode mode) {
+  PGM_P msg = NUL_STR;
+  PGM_P header = NUL_STR;
+  bool waitForInput = false;
+
+  if (mode != PAUSE_MODE_SAME) {
+    pause_mode = mode;
+  }
+
+  switch (pause_mode) {
+  case PAUSE_MODE_CHANGE_FILAMENT:
+    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER);
+    break;
+  case PAUSE_MODE_LOAD_FILAMENT:
+    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_LOAD);
+    break;
+  case PAUSE_MODE_UNLOAD_FILAMENT:
+    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_UNLOAD);
+    break;
+  default:
+    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_PAUSE);
+    break;
+  }
+
+  switch (message) {
+  case PAUSE_MESSAGE_PARKING:
+    msg = GET_TEXT(MSG_PAUSE_PRINT_PARKING);
+    break;
+  case PAUSE_MESSAGE_CHANGING:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_INIT);
+    break;
+  case PAUSE_MESSAGE_UNLOAD:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_UNLOAD);
+    break;
+  case PAUSE_MESSAGE_WAITING:
+    msg = GET_TEXT(MSG_ADVANCED_PAUSE_WAITING);
+    waitForInput = true;
+    break;
+  case PAUSE_MESSAGE_INSERT:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_INSERT);
+    waitForInput = true;
+    break;
+  case PAUSE_MESSAGE_LOAD:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_LOAD);
+    break;
+  case PAUSE_MESSAGE_PURGE:
+  #if ENABLED(ADVANCED_PAUSE_CONTINUOUS_PURGE)
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_CONT_PURGE);
+  #else
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_PURGE);
+  #endif
+    break;
+  case PAUSE_MESSAGE_RESUME:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_RESUME);
+    break;
+  case PAUSE_MESSAGE_HEAT:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_HEAT);
+    waitForInput = true;
+    break;
+  case PAUSE_MESSAGE_HEATING:
+    msg = GET_TEXT(MSG_FILAMENT_CHANGE_HEATING);
+    break;
+  case PAUSE_MESSAGE_OPTION:
+    pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT; // continue without asking user
+    break;
+  case PAUSE_MESSAGE_STATUS:
+    break;
+  default:
+    break;
+  }
+
+  if (msg == NUL_STR) {
+    moveToScreen(DGUS_ScreenID::PRINT_STATUS, true); // ??
+    return;
+  }
+
+  PGM_P const msg2 = msg;
+  PGM_P const msg3 = msg2 + strlen_P(msg2) + 1;
+  PGM_P const msg4 = msg3 + strlen_P(msg3) + 1;
+
+  setMessageLine_P(header, 1);
+  setMessageLine_P(msg2, 2);
+  setMessageLine_P(msg3, 3);
+  setMessageLine_P(msg4, 4);
+  showWaitScreen(DGUS_ScreenID::PRINT_STATUS, waitForInput);
+}
 
 void DGUSScreenHandler::setMessageLine(const char * const msg, const uint8_t line) {
   switch (line) {
@@ -445,6 +575,12 @@ bool DGUSScreenHandler::callScreenSetup(const DGUS_ScreenID screenID) {
 }
 
 void DGUSScreenHandler::moveToScreen(const DGUS_ScreenID screenID, bool abort_wait) {
+
+  if (DGUSDisplay::displayDimmed) {
+	DGUSDisplay::displayDimmed = false;
+    dgus.setBrightness(DGUSDisplay::getBrightness()); // unDim Backlight
+  }
+
   if (current_screenID == DGUS_ScreenID::KILL) return;
 
   if (current_screenID == DGUS_ScreenID::WAIT) {
@@ -453,7 +589,7 @@ void DGUSScreenHandler::moveToScreen(const DGUS_ScreenID screenID, bool abort_wa
 
     if (!abort_wait) return;
 
-    if (wait_continue && wait_for_user)
+    if (wait_continue && marlin.wait_for_user)
       ExtUI::setUserConfirmed();
   }
 

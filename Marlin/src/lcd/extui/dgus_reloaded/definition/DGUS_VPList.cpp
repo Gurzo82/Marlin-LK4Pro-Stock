@@ -18,6 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * jgbrown54
+ *   Added support for enable/disable Runout Sensor
+ *   Changed EEPROM_Reset to EEPROM_Control
+ *   Added Advanced Settings
+ *   Added Print Status Data
  */
 
 #include "../../../../inc/MarlinConfigPre.h"
@@ -37,7 +42,7 @@
 #include "../../../../module/temperature.h"
 
 const char DGUS_MACHINENAME[] PROGMEM = MACHINE_NAME;
-const char DGUS_MARLINVERSION[] PROGMEM = SHORT_BUILD_VERSION;
+const char DGUS_MARLINVERSION[] PROGMEM = SHORT_BUILD_VERSION "-" LKPro_FW_VERSION;  // tx3m
 
 #define VP_HELPER(ADDR, SIZE, FLAGS, EXTRA, RXHANDLER, TXHANDLER) \
   { .addr = ADDR, \
@@ -71,6 +76,16 @@ const char DGUS_MARLINVERSION[] PROGMEM = SHORT_BUILD_VERSION;
 #define VP_HELPER_TX_AUTO(ADDR, EXTRA, TXHANDLER) \
   VP_HELPER_WORD(ADDR, VPFLAG_AUTOUPLOAD, EXTRA, nullptr, TXHANDLER)
 
+// tx3m
+#define RX(HANDLER) &DGUSRxHandler::HANDLER
+#define TX(HANDLER) &DGUSTxHandler::HANDLER
+
+#define VP_HELPER_TX_RX(ADDR, HANDLER) \
+  VP_HELPER_WORD(ADDR, VPFLAG_NONE, nullptr, RX(HANDLER), TX(HANDLER))
+
+#define VP_HELPER_TX_RX_SIZE(ADDR, SIZE, HANDLER) \
+  VP_HELPER(ADDR, SIZE, VPFLAG_NONE, nullptr, RX(HANDLER), TX(HANDLER))
+
 const struct DGUS_VP vp_list[] PROGMEM = {
 
   // READ-ONLY VARIABLES
@@ -89,6 +104,7 @@ const struct DGUS_VP vp_list[] PROGMEM = {
   VP_HELPER_RX(DGUS_Addr::STATUS_Abort,  &DGUSRxHandler::printAbort),
   VP_HELPER_RX(DGUS_Addr::STATUS_Pause,  &DGUSRxHandler::printPause),
   VP_HELPER_RX(DGUS_Addr::STATUS_Resume, &DGUSRxHandler::printResume),
+  VP_HELPER_RX(DGUS_Addr::STATUS_PrintPause, &DGUSRxHandler::printPauseResume),  // tx3m
 
   VP_HELPER_RX(DGUS_Addr::ADJUST_SetFeedrate,     &DGUSRxHandler::feedrate),
   VP_HELPER_RX(DGUS_Addr::ADJUST_SetFlowrate_CUR, &DGUSRxHandler::flowrate),
@@ -108,6 +124,9 @@ const struct DGUS_VP vp_list[] PROGMEM = {
   VP_HELPER_RX(DGUS_Addr::TEMP_Cool,          &DGUSRxHandler::tempCool),
 
   VP_HELPER_RX(DGUS_Addr::STEPPER_Control, &DGUSRxHandler::steppers),
+
+  //jgbrown54 - Added Runout Control
+  VP_HELPER_RX(DGUS_Addr::RUNOUT_Control, &DGUSRxHandler::runoutControl),  //tx3m
 
   VP_HELPER_RX(DGUS_Addr::LEVEL_OFFSET_Set,     &DGUSRxHandler::zOffset),
   VP_HELPER_RX(DGUS_Addr::LEVEL_OFFSET_Step,    &DGUSRxHandler::zOffsetStep),
@@ -132,7 +151,10 @@ const struct DGUS_VP vp_list[] PROGMEM = {
   VP_HELPER_RX_NODATA(DGUS_Addr::GCODE_Clear,   &DGUSRxHandler::gcodeClear),
   VP_HELPER_RX_NODATA(DGUS_Addr::GCODE_Execute, &DGUSRxHandler::gcodeExecute),
 
-  VP_HELPER_RX(DGUS_Addr::EEPROM_Reset, &DGUSRxHandler::resetEEPROM),
+  //jgbrown54 - Changed EEPROM_Reset to EEPROM_Control
+  //VP_HELPER_RX(DGUS_Addr::EEPROM_Reset, &DGUSRxHandler::ResetEEPROM),
+  // VP_HELPER_RX(DGUS_Addr::EEPROM_Control, &DGUSRxHandler::EEPROMControl),
+  VP_HELPER_RX(DGUS_Addr::EEPROM_Control, &DGUSRxHandler::controlEEPROM),  // tx3m
 
   VP_HELPER_RX(DGUS_Addr::SETTINGS2_Extra, &DGUSRxHandler::settingsExtra),
 
@@ -147,6 +169,8 @@ const struct DGUS_VP vp_list[] PROGMEM = {
 
   VP_HELPER_RX(DGUS_Addr::WAIT_Abort, &DGUSRxHandler::waitAbort),
   VP_HELPER_RX_NODATA(DGUS_Addr::WAIT_Continue, &DGUSRxHandler::waitContinue),
+
+  VP_HELPER_RX_NODATA(DGUS_Addr::DIM_Backlight, &DGUSRxHandler::dimBacklight),  // tx3m
 
   // WRITE-ONLY VARIABLES
 
@@ -188,7 +212,7 @@ const struct DGUS_VP vp_list[] PROGMEM = {
   VP_HELPER_TX(DGUS_Addr::STATUS_Icons, &DGUSTxHandler::statusIcons),
 
   VP_HELPER_TX_AUTO(DGUS_Addr::ADJUST_Feedrate,
-                    &feedrate_percentage,
+                    &motion.feedrate_percentage,
                     &DGUSTxHandler::extraToInteger<int16_t>),
   VP_HELPER_TX_AUTO(DGUS_Addr::ADJUST_Flowrate_CUR,
                     nullptr,
@@ -204,14 +228,14 @@ const struct DGUS_VP vp_list[] PROGMEM = {
 
   VP_HELPER_TX_AUTO(DGUS_Addr::TEMP_Current_Bed,
                     &thermalManager.temp_bed.celsius,
-                    (&DGUSTxHandler::extraToFixedPoint<float, 1>)),
+                    (&DGUSTxHandler::extraToFixedPoint<float, 0>)),  // tx3m
   VP_HELPER_TX_AUTO(DGUS_Addr::TEMP_Target_Bed,
                     &thermalManager.temp_bed.target,
                     &DGUSTxHandler::extraToInteger<int16_t>),
   VP_HELPER_TX(DGUS_Addr::TEMP_Max_Bed, &DGUSTxHandler::tempMax),
   VP_HELPER_TX_AUTO(DGUS_Addr::TEMP_Current_H0,
                     &thermalManager.temp_hotend[ExtUI::heater_t::H0].celsius,
-                    (&DGUSTxHandler::extraToFixedPoint<float, 1>)),
+                    (&DGUSTxHandler::extraToFixedPoint<float, 0>)),  // tx3m
   VP_HELPER_TX_AUTO(DGUS_Addr::TEMP_Target_H0,
                     &thermalManager.temp_hotend[ExtUI::heater_t::H0].target,
                     &DGUSTxHandler::extraToInteger<int16_t>),
@@ -242,6 +266,9 @@ const struct DGUS_VP vp_list[] PROGMEM = {
                     &DGUSTxHandler::ablDisableIcon),
   VP_HELPER_TX(DGUS_Addr::LEVEL_AUTO_Grid, &DGUSTxHandler::ablGrid),
 
+  // VP_HELPER(DGUS_Addr::LEVEL_AUTO_Grid, sizeof(int16_t) * DGUS_LEVEL_GRID_SIZE, VPFLAG_NONE, nullptr, nullptr, &DGUSTxHandler::ablGrid),
+  VP_HELPER(DGUS_Addr::SP_LEVEL_AUTO_Grid, 2, VPFLAG_NONE, nullptr, nullptr, &DGUSTxHandler::ablGridColor),
+
   VP_HELPER_TX_EXTRA(DGUS_Addr::LEVEL_PROBING_Icons1,
                      &DGUSScreenHandler::probing_icons[0],
                      &DGUSTxHandler::extraToInteger<uint16_t>),
@@ -255,13 +282,13 @@ const struct DGUS_VP vp_list[] PROGMEM = {
                      &DGUSTxHandler::extraToInteger<uint16_t>),
 
   VP_HELPER_TX_AUTO(DGUS_Addr::MOVE_CurrentX,
-                    &current_position.x,
+                    &motion.position.x,
                     (&DGUSTxHandler::extraToFixedPoint<float, 1>)),
   VP_HELPER_TX_AUTO(DGUS_Addr::MOVE_CurrentY,
-                    &current_position.y,
+                    &motion.position.y,
                     (&DGUSTxHandler::extraToFixedPoint<float, 1>)),
   VP_HELPER_TX_AUTO(DGUS_Addr::MOVE_CurrentZ,
-                    &current_position.z,
+                    &motion.position.z,
                     (&DGUSTxHandler::extraToFixedPoint<float, 1>)),
   VP_HELPER_TX_EXTRA(DGUS_Addr::MOVE_StepIcons,
                      &DGUSScreenHandler::move_steps,
@@ -317,6 +344,11 @@ const struct DGUS_VP vp_list[] PROGMEM = {
                     &DGUSTxHandler::filamentUsed),
 
   VP_HELPER_TX(DGUS_Addr::WAIT_Icons, &DGUSTxHandler::waitIcons),
+  // jgbrown54 tx3m
+  VP_HELPER_TX_AUTO(DGUS_Addr::FAN0_Speed_CUR, nullptr, &DGUSTxHandler::fanSpeed),
+  VP_HELPER_TX_AUTO(DGUS_Addr::STATUS_Feedrate_MMS, nullptr, &DGUSTxHandler::feedrateMMS),
+  VP_HELPER_TX_AUTO(DGUS_Addr::STATUS_Pause_Resume_Icon, nullptr, &DGUSTxHandler::statusIcons),
+  // tx3m
 
   // READ-WRITE VARIABLES
 
@@ -354,6 +386,31 @@ const struct DGUS_VP vp_list[] PROGMEM = {
             nullptr,
             &DGUSRxHandler::brightness,
             &DGUSTxHandler::brightness),
+
+  // jgbrown54 - Added Advanced Settings tx3m
+  VP_HELPER_TX_RX_SIZE(DGUS_Addr::X_Steps_mm, 4, stepsPerMmX),
+  VP_HELPER_TX_RX_SIZE(DGUS_Addr::Y_Steps_mm, 4, stepsPerMmY),
+  VP_HELPER_TX_RX_SIZE(DGUS_Addr::Z_Steps_mm, 4, stepsPerMmZ),
+  VP_HELPER_TX_RX_SIZE(DGUS_Addr::E_Steps_mm, 4, stepsPerMmE),
+  VP_HELPER_TX_RX(DGUS_Addr::X_Jerk_Steps_mm, jerkStepsMmX),
+  VP_HELPER_TX_RX(DGUS_Addr::Y_Jerk_Steps_mm, jerkStepsMmY),
+  VP_HELPER_TX_RX(DGUS_Addr::Z_Jerk_Steps_mm, jerkStepsMmZ),
+  VP_HELPER_TX_RX(DGUS_Addr::E_Jerk_Steps_mm, jerkStepsMmE),
+  VP_HELPER_TX_RX(DGUS_Addr::JunctionDeviation, junctionDeviation),
+  VP_HELPER_TX_RX(DGUS_Addr::Linear_Advance, linearAdvance),
+  VP_HELPER_TX_RX(DGUS_Addr::X_Acceleration, accelerationX),
+  VP_HELPER_TX_RX(DGUS_Addr::Y_Acceleration, accelerationY),
+  VP_HELPER_TX_RX(DGUS_Addr::Z_Acceleration, accelerationZ),
+  VP_HELPER_TX_RX(DGUS_Addr::E_Acceleration, accelerationE),
+  VP_HELPER_TX_RX(DGUS_Addr::Print_Acceleration, accelerationPrint),
+  VP_HELPER_TX_RX(DGUS_Addr::Retract_Acceleration, accelerationRetract),
+  VP_HELPER_TX_RX(DGUS_Addr::Travel_Acceleration, accelerationTravel),
+  VP_HELPER_TX_RX(DGUS_Addr::X_Max_Speed, maxFeedRateX),
+  VP_HELPER_TX_RX(DGUS_Addr::Y_Max_Speed, maxFeedRateY),
+  VP_HELPER_TX_RX(DGUS_Addr::Z_Max_Speed, maxFeedRateZ),
+  VP_HELPER_TX_RX(DGUS_Addr::E_Max_Speed, maxFeedRateE),
+  VP_HELPER_TX_RX(DGUS_Addr::Min_Speed, minPrintFeedRate),
+  VP_HELPER_TX_RX(DGUS_Addr::Min_Travel_Speed, minTravelFeedRate),
 
   // SPECIAL CASES
 

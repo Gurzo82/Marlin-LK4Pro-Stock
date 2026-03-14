@@ -49,7 +49,7 @@ struct ProgStr {
   constexpr explicit operator bool() const { return ptr != nullptr; }
 };
 
-static void config_prefix(ProgStr name, ProgStr pref=nullptr, int8_t ind=-1) {
+static void config_prefix(ProgStr name, ProgStr pref=nullptr, const int8_t ind=-1) {
   SERIAL_ECHOPGM("Config:");
   if (pref) SERIAL_ECHOPGM_P(static_cast<PGM_P>(pref));
   if (ind >= 0) { SERIAL_ECHO(ind); SERIAL_CHAR(':'); }
@@ -57,15 +57,16 @@ static void config_prefix(ProgStr name, ProgStr pref=nullptr, int8_t ind=-1) {
 }
 
 template<typename T>
-static void config_line(ProgStr name, const T val, ProgStr pref=nullptr, int8_t ind=-1) {
+static void config_line(ProgStr name, const T val, ProgStr pref=nullptr, const int8_t ind=-1) {
   config_prefix(name, pref, ind);
   SERIAL_ECHOLN(val);
 }
 
 template<typename T>
-static void config_line_e(int8_t e, ProgStr name, const T val) {
+static void config_line_e(const int8_t e, ProgStr name, const T val) {
   config_line(name, val, PSTR("Extr."), e + 1);
 }
+
 /**
  * M360: Report Firmware configuration
  *       in RepRapFirmware-compatible format
@@ -138,8 +139,7 @@ void GcodeSuite::M360() {
     if (TERN0(HAS_Y_AXIS, planner.max_jerk.x == planner.max_jerk.y))
       config_line(F("XY"), planner.max_jerk.x, JERK_STR);
     else {
-      TERN_(HAS_X_AXIS, _REPORT_JERK(X));
-      TERN_(HAS_Y_AXIS, _REPORT_JERK(Y));
+      XY_MAP(_REPORT_JERK);
     }
     TERN_(HAS_Z_AXIS, config_line(Z_STR, planner.max_jerk.z, JERK_STR));
     SECONDARY_AXIS_MAP(_REPORT_JERK);
@@ -171,8 +171,8 @@ void GcodeSuite::M360() {
   const xyz_pos_t dmin = NUM_AXIS_ARRAY(X_MIN_POS, Y_MIN_POS, Z_MIN_POS, I_MIN_POS, J_MIN_POS, K_MIN_POS, U_MIN_POS, V_MIN_POS, W_MIN_POS),
                   dmax = NUM_AXIS_ARRAY(X_MAX_POS, Y_MAX_POS, Z_MAX_POS, I_MAX_POS, J_MAX_POS, K_MAX_POS, U_MAX_POS, V_MAX_POS, W_MAX_POS);
   xyz_pos_t cmin = dmin, cmax = dmax;
-  apply_motion_limits(cmin);
-  apply_motion_limits(cmax);
+  motion.apply_limits(cmin);
+  motion.apply_limits(cmax);
   const xyz_pos_t wmin = cmin.asLogical(), wmax = cmax.asLogical();
 
   PGMSTR(MIN_STR, "Min");
@@ -242,7 +242,7 @@ void GcodeSuite::M360() {
       #endif
       config_line_e(e, F("Acceleration"), planner.settings.max_acceleration_mm_per_s2[E_AXIS_N(e)]);
       config_line_e(e, F("MaxSpeed"), planner.settings.max_feedrate_mm_s[E_AXIS_N(e)]);
-      config_line_e(e, F("Diameter"), TERN(NO_VOLUMETRICS, DEFAULT_NOMINAL_FILAMENT_DIA, planner.filament_size[e]));
+      config_line_e(e, F("Diameter"), TERN(HAS_VOLUMETRIC_EXTRUSION, planner.filament_size[e], DEFAULT_NOMINAL_FILAMENT_DIA));
       config_line_e(e, F("MaxTemp"), thermalManager.hotend_maxtemp[e]);
     }
   #endif

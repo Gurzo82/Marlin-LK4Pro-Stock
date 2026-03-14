@@ -35,6 +35,7 @@
 const struct DGUS_ScreenSetup screen_setup_list[] PROGMEM = {
   #if HAS_MEDIA
     SETUP_HELPER(DGUS_ScreenID::PRINT,            &DGUSSetupHandler::print),
+    SETUP_HELPER(DGUS_ScreenID::HOME,             &DGUSSetupHandler::resetSelectedFile),  // tx3m
   #endif
   SETUP_HELPER(DGUS_ScreenID::PRINT_STATUS,       &DGUSSetupHandler::printStatus),
   SETUP_HELPER(DGUS_ScreenID::PRINT_ADJUST,       &DGUSSetupHandler::printAdjust),

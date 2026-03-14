@@ -41,6 +41,10 @@
 #define BE16_P(V) ( ((uint8_t*)(V))[0] << 8U | ((uint8_t*)(V))[1] )
 #define BE32_P(V) ( ((uint8_t*)(V))[0] << 24U | ((uint8_t*)(V))[1] << 16U | ((uint8_t*)(V))[2] << 8U | ((uint8_t*)(V))[3] )
 
+// jgbrown54 - Added Swap16 tx3m
+#define Swap16(val) ((uint16_t)(((uint16_t)(val) >> 8) | \
+                                ((uint16_t)(val) << 8)))
+
 // Low-Level access to the display.
 class DGUSDisplay {
 public:
@@ -99,6 +103,8 @@ public:
   // Set the display brightness/volume, ranging 0 - 100
   static void setBrightness(uint8_t brightness);
   static void setVolume(uint8_t volume);
+
+  static bool displayDimmed;
 
   // Periodic tasks, eg. Rx-Queue handling.
   static void loop();

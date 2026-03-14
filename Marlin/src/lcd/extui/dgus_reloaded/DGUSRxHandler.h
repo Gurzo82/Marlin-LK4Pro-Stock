@@ -17,7 +17,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
+ * jgbrown54
+ *   Added support for enable/disable Runout Sensor
+ *   Added support for saving and restoring EEPROM
+ *   Added Advanced Settings
  */
 #pragma once
 
@@ -37,6 +40,7 @@ namespace DGUSRxHandler {
   void printAbort(DGUS_VP &, void *);
   void printPause(DGUS_VP &, void *);
   void printResume(DGUS_VP &, void *);
+  void printPauseResume(DGUS_VP &, void *);  // tx3m
 
   void feedrate(DGUS_VP &, void *);
   void flowrate(DGUS_VP &, void *);
@@ -48,6 +52,7 @@ namespace DGUSRxHandler {
   void tempCool(DGUS_VP &, void *);
 
   void steppers(DGUS_VP &, void *);
+  void runoutControl(DGUS_VP &, void *);  // tx3m
 
   void zOffset(DGUS_VP &, void *);
   void zOffsetStep(DGUS_VP &, void *);
@@ -70,7 +75,8 @@ namespace DGUSRxHandler {
   void gcodeClear(DGUS_VP &, void *);
   void gcodeExecute(DGUS_VP &, void *);
 
-  void resetEEPROM(DGUS_VP &, void *);
+  //jgbrown54 - Add Save and Restore EEPROM
+  void controlEEPROM(DGUS_VP &, void *);  // tx3m
 
   void settingsExtra(DGUS_VP &, void *);
 
@@ -91,6 +97,32 @@ namespace DGUSRxHandler {
   void volume(DGUS_VP &, void *);
 
   void brightness(DGUS_VP &, void *);
+
+  // Motion settings tx3m
+  void dimBacklight(DGUS_VP &vp, void *);
+  void stepsPerMmX(DGUS_VP& vp, void *);
+  void stepsPerMmY(DGUS_VP& vp, void *);
+  void stepsPerMmZ(DGUS_VP& vp, void *);
+  void stepsPerMmE(DGUS_VP& vp, void *);
+  void jerkStepsMmX(DGUS_VP& vp, void *);
+  void jerkStepsMmY(DGUS_VP& vp, void *);
+  void jerkStepsMmZ(DGUS_VP& vp, void *);
+  void jerkStepsMmE(DGUS_VP& vp, void *);
+  void junctionDeviation(DGUS_VP& vp, void *);
+  void linearAdvance(DGUS_VP& vp, void *);
+  void accelerationX(DGUS_VP& vp, void *);
+  void accelerationY(DGUS_VP& vp, void *);
+  void accelerationZ(DGUS_VP& vp, void *);
+  void accelerationE(DGUS_VP& vp, void *);
+  void accelerationPrint(DGUS_VP& vp, void *);
+  void accelerationRetract(DGUS_VP& vp, void *);
+  void accelerationTravel(DGUS_VP& vp, void *);
+  void maxFeedRateX(DGUS_VP& vp, void *);
+  void maxFeedRateY(DGUS_VP& vp, void *);
+  void maxFeedRateZ(DGUS_VP& vp, void *);
+  void maxFeedRateE(DGUS_VP& vp, void *);
+  void minPrintFeedRate(DGUS_VP& vp, void *);
+  void minTravelFeedRate(DGUS_VP& vp, void *);
 
   void debug(DGUS_VP &, void *);
 

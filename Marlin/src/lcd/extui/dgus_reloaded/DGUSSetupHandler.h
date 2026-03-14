@@ -26,6 +26,7 @@ namespace DGUSSetupHandler {
   #if HAS_MEDIA
     bool print();
   #endif
+  bool resetSelectedFile(); // tx3m
   bool printStatus();
   bool printAdjust();
   bool levelingMenu();

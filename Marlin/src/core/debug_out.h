@@ -99,6 +99,7 @@
   #define DEBUG_XYZ(...)            NOOP
   #define DEBUG_DELAY(...)          NOOP
   #define DEBUG_SYNCHRONIZE()       NOOP
+  #define DEBUG_ECHOLNPAIR_F(...)   NOOP
 
 #endif
 
