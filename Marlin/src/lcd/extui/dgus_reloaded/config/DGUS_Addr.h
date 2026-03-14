@@ -18,6 +18,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * jgbrown54
+ *   Added support for enable/disable Runout Sensor
+ *   Added support for saving and restoring EEPROM
+ *   Added Advanced Settings
+ *   Added Print Status Data
+ * tx3m
+ *   Added missing variables for the LK4 Pro
  */
 #pragma once
 
@@ -34,6 +41,44 @@
 #define DGUS_LONGESTPRINT_LEN 24
 #define DGUS_FILAMENTUSED_LEN 24
 #define DGUS_GCODE_LEN        32
+
+enum class DGUS_SP_Variable : uint8_t {
+  X = 0x01,
+  Y = 0x02,
+  COLOR = 0x03,
+  Lib_ID_Font_X_Dots = 0x04, // H lid, L x size
+  ALIGN_INT = 0x05,          // H: align 00=right, 01=left, 02=center L: number int digits
+  DEC_MODE = 0x06,           // H: decimal number, L: mode 00=int, 01=long, 04=int64, 05=uint, 06=ulong
+  UNITS = 0x07               // H: len L: text max 11 bytes
+};
+
+enum class DGUS_SP_Text : uint8_t {
+  X = 0x01,
+  Y = 0x02,
+  COLOR = 0x03,
+  BOX = 0x04, // Xs,Ys,Xe,Ye 2 bytes each
+  LEN = 0x08,
+  FONT = 0x09,      // H: font0, L: font1
+  FONT_SIZE = 0x0A, // H: X dots, L: y dots
+  ENCODE = 0x0B,
+  LINE_SPACING = 0x0C // H: spacing
+};
+
+constexpr uint8_t DGUS_SP_VARIABLE_LEN = 0x08;
+constexpr uint8_t DGUS_SP_TEXT_LEN = 0x0D;
+
+constexpr uint16_t COLOR_WHITE = 0xFFFF;
+constexpr uint16_t COLOR_GREEN = 0x07E0;
+
+// TODO: Read these values at init
+// variable display box size in dwin screen
+constexpr int16_t STATUS_Filename_Box[4] = { 56, 338, 192, 12 };
+constexpr int16_t WAIT_Message_Line1_Box[4] = { 25, 157, 224, 20 };
+constexpr int16_t WAIT_Message_Line2_Box[4] = { 25, 183, 224, 20 };
+constexpr int16_t WAIT_Message_Line3_Box[4] = { 25, 209, 224, 20 };
+constexpr int16_t WAIT_Message_Line4_Box[4] = { 25, 235, 224, 20 };
+
+// DWIN DGUS variables are indexed by word. 0x0000-0x6FFFF
 
 enum class DGUS_Addr : uint16_t {
   END                     = 0,
@@ -87,7 +132,9 @@ enum class DGUS_Addr : uint16_t {
   MOVE_SetStep            = 0x2024, // Data: DGUS_Data::StepSize
   GCODE_Clear             = 0x2025,
   GCODE_Execute           = 0x2026,
-  EEPROM_Reset            = 0x2027, // Popup / Data: DGUS_Data::Popup
+  //jgbrown54 - Changed name
+  //EEPROM_Reset              = 0x2027, // Popup / Data: DGUS_Data::Popup
+  EEPROM_Control            = 0x2027, // Popup / Data: DGUS_Data::Popup
   SETTINGS2_Extra         = 0x2028, // Data: DGUS_Data::Extra
   PID_Select              = 0x2029, // Data: DGUS_Data::Heater
   PID_SetTemp             = 0x202A, // Type: Integer (16 bits unsigned)
@@ -96,6 +143,11 @@ enum class DGUS_Addr : uint16_t {
   POWERLOSS_Resume        = 0x202D, // Popup / Data: DGUS_Data::Popup
   WAIT_Abort              = 0x202E, // Popup / Data: DGUS_Data::Popup
   WAIT_Continue           = 0x202F,
+  // tx3m
+  DIM_Backlight             = 0x2030, // Dim Backlight
+  FILAMENT_Load_Unload    = 0x2040, // GCTODO
+  RUNOUT_Control          = 0x2041, // GCTODO
+  STATUS_PrintPause       = 0x2042, //
 
   // WRITE-ONLY VARIABLES
 
@@ -157,6 +209,11 @@ enum class DGUS_Addr : uint16_t {
   INFOS_FilamentUsed      = 0x31A5, // 0x31A5 - 0x31BC
   WAIT_Icons              = 0x31BD, // Bits: DGUS_Data::WaitIcon
   STATUS_Icons            = 0x31BE, // Bits: DGUS_Data::StatusIcon
+  // tx3m
+  STATUS_Feedrate_MMS     = 0x31BF,
+  FAN0_Speed_CUR          = 0x31C1,
+  MOVE_CurrentE           = 0x31C3,  // Type: Fixed point, 1 decimal (16 bits signed)
+  STATUS_Pause_Resume_Icon = 0x31C5, // 1 byte 0: resume, 1: pause
 
   // READ-WRITE VARIABLES
 
@@ -166,9 +223,45 @@ enum class DGUS_Addr : uint16_t {
   VOLUME_Level            = 0x4022, // Type: Integer (16 bits unsigned) / Data: volume as percent (0-100)
   BRIGHTNESS_Level        = 0x4023, // Type: Integer (16 bits unsigned) / Data: brightness as percent (0-100)
 
+  //jgbrown54 - Added Advanced Settings (tx3m)
+  X_Steps_mm              = 0x4025, // long: 4.2
+  Y_Steps_mm              = 0x4029, // long : 4.2
+  X_Jerk_Steps_mm         = 0x402D, // int: 3.1
+  Y_Jerk_Steps_mm         = 0x402F, // int: 3.1
+  Z_Jerk_Steps_mm         = 0x4031, // int: 3.1
+  E_Jerk_Steps_mm         = 0x4033, // int: 3.1
+  JunctionDeviation       = 0x4035, // int: 1.3
+  Linear_Advance          = 0x4037, // int: 2.2
+  X_Acceleration          = 0x4039, // int: 4.0
+  Y_Acceleration          = 0x403B, // int: 4.0
+  Z_Acceleration          = 0x403D, // int: 4.0
+  E_Acceleration          = 0x403F, // int: 4.0
+  Print_Acceleration      = 0x4041, // int: 4.0
+  Retract_Acceleration    = 0x4043, // int: 4.0
+  Travel_Acceleration     = 0x4045, // int: 4.0
+  X_Max_Speed             = 0x4047, // int 4.0
+  Y_Max_Speed             = 0x4049, // int 4.0
+  Z_Max_Speed             = 0x404B, // int 4.0
+  E_Max_Speed             = 0x404D, // int 4.0
+  Min_Speed               = 0x404F, // int 3.1
+  Min_Travel_Speed        = 0x4051, // int 3.1
+  Z_Steps_mm              = 0x4053, // long 4.2
+  E_Steps_mm              = 0x4057, // long 4.2
+  //jgbrown - End Additions
+
   // SPECIAL CASES
 
   STATUS_Percent_Complete = 0x5000, // Same as STATUS_Percent, but always 100%
   INFOS_Debug             = 0x5001,
+
+
+  // Display properties tx3m
+  SP_LEVEL_AUTO_Grid = 0x6000, // 8 * 25 = 200, 0x6000-0x60C7
+  SP_SD_FileName0 = 0x60C8,    // 13 * 5 = 65, 0x60C8-0x6108
+  SP_STATUS_Filename = 0x6109, // 13 0x6109-0x6115
+  SP_MSG_LINE1 = 0x6116,       // 13 0x6116-0x6122
+  SP_MSG_LINE2 = 0x6123,       // 13 0x6123-0x612F
+  SP_MSG_LINE3 = 0x6130,       // 13 0x6130-0x613C
+  SP_MSG_LINE4 = 0x613D        // 13 0x613D-0x6149
 
 };

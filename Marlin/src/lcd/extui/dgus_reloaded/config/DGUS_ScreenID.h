@@ -45,6 +45,15 @@ enum class DGUS_ScreenID : uint8_t {
   VOLUME              = 20,
   BRIGHTNESS          = 21,
   INFOS               = 22,
+  //jgbrown54 - Added screens tx3m
+  STATS               = 23,
+  SCREEN_SETTINGS     = 24,
+  ADVANCED_SETTINGS_1 = 25,
+  ADVANCED_SETTINGS_2 = 26,
+  ADVANCED_SETTINGS_3 = 27,
+  PAUSE_CONFIRM       = 206,
+  RESUME_CONFIRM      = 208,
+  // end of jgbrown54 additions
   DEBUG               = 240,
   POWERLOSS           = 248,
   WAIT                = 249,

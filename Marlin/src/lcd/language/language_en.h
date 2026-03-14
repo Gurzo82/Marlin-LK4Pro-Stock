@@ -970,6 +970,8 @@ namespace LanguageNarrow_en {
   LSTR DGUS_MSG_PROBING_FAILED            = _UxGT("Probing failed");
   LSTR DGUS_MSG_PROBING_SUCCESS           = _UxGT("Probing successful");
   LSTR DGUS_MSG_RESET_EEPROM              = _UxGT("EEPROM reset");
+  LSTR DGUS_MSG_EEPROM_SAVED              = _UxGT("EEPROM Data Saved");  // tx3m
+  LSTR DGUS_MSG_EEPROM_LOADED             = _UxGT("EEPROM Data Loaded");  // tx3m
   LSTR DGUS_MSG_WRITE_EEPROM_FAILED       = _UxGT("EEPROM write failed");
   LSTR DGUS_MSG_READ_EEPROM_FAILED        = _UxGT("EEPROM read failed");
   LSTR DGUS_MSG_FILAMENT_RUNOUT           = _UxGT("Filament runout E%d");
@@ -1068,6 +1070,10 @@ namespace LanguageNarrow_en {
   LSTR MSG_PROGRESS_HOMING                = _UxGT("Homing");
   LSTR MSG_PROGRESS_MOVING_SELECTOR       = _UxGT("Moving selector");
   LSTR MSG_PROGRESS_FEED_FSENSOR          = _UxGT("Feeding to FSensor");
+  // tx3m
+  LSTR DGUS_MSG_FEATURE_NOT_ENABLED       = _UxGT("Feature is not enabled");
+  LSTR DGUS_MSG_EXT_PID_DISABLED          = _UxGT("Extruder PID disabled");
+  LSTR DGUS_MSG_COOLING                   = _UxGT("Cooling...");
 }
 
 namespace LanguageWide_en {

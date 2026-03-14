@@ -184,6 +184,8 @@ void DGUSDisplay::disableControl(const DGUS_ScreenID screenID, DGUS_ControlType 
   delay(50);
 }
 
+bool DGUSDisplay::displayDimmed = false;  // tx3m
+
 uint8_t DGUSDisplay::getBrightness() {
   return brightness;
 }
@@ -192,11 +194,18 @@ uint8_t DGUSDisplay::getVolume() {
   return map_precise(volume, 0, 255, 0, 100);
 }
 
+// tx3m
 void DGUSDisplay::setBrightness(uint8_t new_brightness) {
-  brightness = constrain(new_brightness, 0, 100);
-  new_brightness = map_precise(brightness, 0, 100, 5, 100);
+  new_brightness = constrain(new_brightness, 0, 100);
+  new_brightness = map_precise(new_brightness, 0, 100, 5, 100);
+  DEBUG_ECHOLNPGM("SetBrightness ", new_brightness);
+
   const uint8_t command[] = { new_brightness, new_brightness };
   write(0x82, command, sizeof(command));
+
+  if (!displayDimmed) {
+	  brightness = new_brightness;
+  }
 }
 
 void DGUSDisplay::setVolume(uint8_t new_volume) {

@@ -141,14 +141,15 @@ namespace ExtUI {
 
   #if HAS_MESH
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const float zval) {
-      screen.meshUpdate(xpos, ypos);
-    }
-
-    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
-      if (state == G29_POINT_FINISH)
-        screen.meshUpdate(xpos, ypos);
+      screen.meshUpdate(xpos, ypos, zval);  // tx3m use the zval version so that the grid can be updated
     }
   #endif
+
+  void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
+    if (state == G29_POINT_FINISH){
+      screen.meshUpdate(xpos, ypos, 0.123);
+    }
+  }
 
   #if ENABLED(PREVENT_COLD_EXTRUSION)
     void onSetMinExtrusionTemp(const celsius_t) {}

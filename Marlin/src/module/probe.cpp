@@ -99,6 +99,7 @@
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../core/debug_out.h"
 
+float last_probe_z = 0;  // tx3m store the last probed Z value for use in the grid update
 Probe probe;
 
 xyz_pos_t Probe::offset; // Initialized by settings.load
@@ -1073,6 +1074,7 @@ float Probe::probe_at_point(
     #endif
 
     measured_z = deploy() ? NAN : run_z_probe(sanity_check, z_min_point, z_clearance) + offset.z;
+    last_probe_z = measured_z;
 
     // Deploy succeeded and a successful measurement was done.
     // Raise and/or stow the probe depending on 'raise_after' and settings.

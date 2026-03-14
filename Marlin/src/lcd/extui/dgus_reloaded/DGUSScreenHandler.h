@@ -47,9 +47,11 @@ public:
 
   static void playTone(const uint16_t frequency, const uint16_t duration=0);
   static void meshUpdate(const int8_t xpos, const int8_t ypos);
+  static void meshUpdate(const int8_t xpos, const int8_t ypos, const float zval);
   static void printTimerStarted();
   static void printTimerPaused();
   static void printTimerStopped();
+  static void printFinished();  // tx3m
   static void filamentRunout(const ExtUI::extruder_t extruder);
 
   #if HAS_MEDIA
@@ -69,6 +71,7 @@ public:
     static void pidTuning(const ExtUI::pidresult_t rst);
   #endif
 
+  static void showPauseMessage(PauseMessage message, PauseMode mode);  // tx3m
   static void setMessageLine(const char * const msg, const uint8_t line);
   static void setMessageLine_P(PGM_P const msg, const uint8_t line);
   static void setMessageLine(FSTR_P const msg, const uint8_t line) { setMessageLine_P(FTOP(msg), line); }
@@ -99,6 +102,7 @@ public:
   static DGUS_Data::StepSize move_steps;
 
   static uint16_t probing_icons[2];
+  static float probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];  // tx3m as it was in the old working FW
 
   static DGUS_Data::Extruder filament_extruder;
   static uint16_t filament_length;

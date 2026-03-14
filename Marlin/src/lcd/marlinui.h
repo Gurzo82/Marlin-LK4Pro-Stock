@@ -795,7 +795,12 @@ public:
       static void load_settings();
       static void store_settings();
     #endif
-    static void eeprom_alert(const EEPROM_Error) TERN_(EEPROM_AUTO_INIT, {});
+  #if DISABLED(EEPROM_AUTO_INIT)
+      static void eeprom_alert(const EEPROM_Error) TERN_(EEPROM_AUTO_INIT, {});
+      static void eeprom_alert_crc()     { eeprom_alert(ERR_EEPROM_NOERR); }
+      static void eeprom_alert_index()   { eeprom_alert(ERR_EEPROM_VERSION); }
+      static void eeprom_alert_version() { eeprom_alert(ERR_EEPROM_SIZE); }
+    #endif
   #endif
 
   //

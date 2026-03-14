@@ -31,7 +31,12 @@
 
 #include "../../../gcode/queue.h"
 
-#if HAS_MEDIA
+// tx3m
+#if HAS_LEVELING
+  #include "../../../feature/bedlevel/bedlevel.h"
+#endif
+
+#if ENABLED(SDSUPPORT)
   bool DGUSSetupHandler::print() {
     screen.filelist.refresh();
 
@@ -45,6 +50,13 @@
     return true;
   }
 #endif
+
+// tx3m
+bool DGUSSetupHandler::resetSelectedFile() {
+  screen.filelist_offset = 0;
+  screen.filelist_selected = -1;
+  return true;
+}
 
 bool DGUSSetupHandler::printStatus() {
   if (ExtUI::isPrinting() || ExtUI::isPrintingPaused()) {
@@ -65,7 +77,9 @@ bool DGUSSetupHandler::printAdjust() {
 }
 
 bool DGUSSetupHandler::levelingMenu() {
+#if HAS_LEVELING
   ExtUI::setLevelingActive(screen.leveling_active);
+#endif
 
   if (!screen.isPrinterIdle()) {
     screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BUSY));
@@ -88,7 +102,9 @@ bool DGUSSetupHandler::levelingMenu() {
 }
 
 bool DGUSSetupHandler::levelingManual() {
+#if HAS_LEVELING
   ExtUI::setLevelingActive(false);
+#endif
 
   if (ExtUI::isPositionKnown()) {
     return true;
@@ -136,11 +152,13 @@ bool DGUSSetupHandler::levelingOffset() {
 }
 
 bool DGUSSetupHandler::levelingAutomatic() {
+#if HAS_LEVELING
   if (ExtUI::getLevelingIsValid()) {
     screen.leveling_active = true;
 
     ExtUI::setLevelingActive(true);
   }
+#endif
 
   return true;
 }
@@ -161,6 +179,7 @@ bool DGUSSetupHandler::filament() {
 
 bool DGUSSetupHandler::move() {
   screen.move_steps = DGUS_Data::StepSize::MM10;
+  screen.filament_extruder = DGUS_Data::Extruder::CURRENT;
 
   if (!screen.isPrinterIdle()) {
     screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BUSY));

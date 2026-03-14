@@ -18,6 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * jgbrown54
+ *   Added support for enable/disable Runout Sensor
+ *   Added support for Saving and Restoring EEPROM
+ *   Added Advanced Settings
  */
 
 #include "../../../inc/MarlinConfigPre.h"
@@ -72,6 +76,18 @@ void DGUSRxHandler::screenChange(DGUS_VP &vp, void *data_ptr) {
     screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_NOT_WHILE_IDLE));
     return;
   }
+
+#if !HAS_LEVELING
+  // Skip Leveling menu if no automatic leveling
+  if (screen == DGUS_ScreenID::LEVELING_MENU) {
+	if (dgus.getCurrentScreen() == DGUS_ScreenID::SETTINGS_MENU) {
+	  screenID = DGUS_ScreenID::LEVELING_MANUAL;
+	}
+	else {
+	  screenID = DGUS_ScreenID::SETTINGS_MENU;
+	}
+  }
+#endif
 
   screen.triggerScreenChange(screenID);
 }
@@ -159,6 +175,12 @@ void DGUSRxHandler::screenChange(DGUS_VP &vp, void *data_ptr) {
 void DGUSRxHandler::printAbort(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
 
+  // tx3m
+  if (DGUSDisplay::displayDimmed) {
+	DGUSDisplay::displayDimmed = false;
+    dgus.setBrightness(DGUSDisplay::getBrightness()); // unDim Backlight
+  }
+
   const DGUS_Data::Popup result = (DGUS_Data::Popup)((uint8_t*)data_ptr)[1];
 
   if (result != DGUS_Data::Popup::CONFIRMED) {
@@ -175,6 +197,12 @@ void DGUSRxHandler::printAbort(DGUS_VP &vp, void *data_ptr) {
 
 void DGUSRxHandler::printPause(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
+
+  // tx3m
+  if (DGUSDisplay::displayDimmed) {
+	DGUSDisplay::displayDimmed = false;
+    dgus.setBrightness(DGUSDisplay::getBrightness()); // unDim Backlight
+  }
 
   const DGUS_Data::Popup result = (DGUS_Data::Popup)((uint8_t*)data_ptr)[1];
 
@@ -193,6 +221,12 @@ void DGUSRxHandler::printPause(DGUS_VP &vp, void *data_ptr) {
 void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
 
+  // tx3m
+  if (DGUSDisplay::displayDimmed) {
+	DGUSDisplay::displayDimmed = false;
+    dgus.setBrightness(DGUSDisplay::getBrightness()); // unDim Backlight
+  }
+
   const DGUS_Data::Popup result = (DGUS_Data::Popup)((uint8_t*)data_ptr)[1];
 
   if (result != DGUS_Data::Popup::CONFIRMED) {
@@ -210,6 +244,18 @@ void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
   }
 
   ExtUI::resumePrint();
+}
+
+// tx3m
+void DGUSRxHandler::printPauseResume(DGUS_VP& vp, void* data_ptr) {
+  if (ExtUI::isPrinting()) {
+    // confirm pause
+    screen.triggerScreenChange(DGUS_ScreenID::PAUSE_CONFIRM);
+  }
+  else {
+    // confirm resume
+    screen.triggerScreenChange(DGUS_ScreenID::RESUME_CONFIRM);
+  }
 }
 
 void DGUSRxHandler::feedrate(DGUS_VP &vp, void *data_ptr) {
@@ -364,6 +410,25 @@ void DGUSRxHandler::steppers(DGUS_VP &vp, void *data_ptr) {
   screen.triggerFullUpdate();
 }
 
+// jgbrown54 - Added Runout Control tx3m
+void DGUSRxHandler::runoutControl(DGUS_VP& vp, void* data_ptr) {
+  UNUSED(vp);
+
+  const DGUS_Data::Control control = (DGUS_Data::Control)((uint8_t*)data_ptr)[1];
+
+  switch (control) {
+  case DGUS_Data::Control::ENABLE:
+    ExtUI::setFilamentRunoutEnabled(true);
+    break;
+  case DGUS_Data::Control::DISABLE:
+    ExtUI::setFilamentRunoutEnabled(false);
+    break;
+  }
+
+  screen.triggerFullUpdate();
+}
+
+
 void DGUSRxHandler::zOffset(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
 
@@ -380,7 +445,11 @@ void DGUSRxHandler::zOffset(DGUS_VP &vp, void *data_ptr) {
   const int16_t data = BE16_P(data_ptr);
   const float offset = dgus.fromFixedPoint<int16_t, float, 2>(data);
 
-  const int16_t steps = ExtUI::mmToWholeSteps(offset - ExtUI::getZOffset_mm(), ExtUI::Z);
+  // const int16_t steps = ExtUI::mmToWholeSteps(offset - ExtUI::getZOffset_mm(), ExtUI::Z);
+  // tx3m fix incorrect direction
+  const float delta = ExtUI::getZOffset_mm() - offset;
+  const int16_t steps = ExtUI::mmToWholeSteps(delta, ExtUI::Z);
+
 
   ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
 
@@ -407,10 +476,12 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
   switch (screen.offset_steps) {
     default: return;
     case DGUS_Data::StepSize::MMP1:
-      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f), ExtUI::Z);
+      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f), ExtUI::Z);
+      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.1f : 0.1f), ExtUI::Z);  // tx3m fix incorrect direction
       break;
     case DGUS_Data::StepSize::MMP01:
-      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.01f : -0.01f), ExtUI::Z);
+      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.01f : -0.01f), ExtUI::Z);
+      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.01f : 0.01f), ExtUI::Z);  // tx3m fix incorrect direction
       break;
   }
 
@@ -516,7 +587,9 @@ void DGUSRxHandler::disableABL(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
+#if HAS_LEVELING
   ExtUI::setLevelingActive(false);
+#endif
 
   screen.triggerEEPROMSave();
   screen.triggerFullUpdate();
@@ -708,21 +781,53 @@ void DGUSRxHandler::gcodeExecute(DGUS_VP &vp, void *data_ptr) {
   queue.enqueue_one_now(screen.gcode);
 }
 
-void DGUSRxHandler::resetEEPROM(DGUS_VP &vp, void *data_ptr) {
+// jgbrown54 - Added EEPROM Save and Restore
+// tx3m: replaced by resetEEPROM with multiple actions
+// void DGUSRxHandler::resetEEPROM(DGUS_VP &vp, void *data_ptr) {
+//   UNUSED(vp);
+
+//   const DGUS_Data::Popup result = (DGUS_Data::Popup)((uint8_t*)data_ptr)[1];
+
+//   if (result != DGUS_Data::Popup::CONFIRMED) return;
+
+//   if (!screen.isPrinterIdle()) {
+//     screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BUSY));
+//     return;
+//   }
+
+//   queue.enqueue_now(F("M502"));
+//   queue.enqueue_now(F("M500"));
+// }
+
+// tx3m
+void DGUSRxHandler::controlEEPROM(DGUS_VP& vp, void* data_ptr) {
   UNUSED(vp);
 
-  const DGUS_Data::Popup result = (DGUS_Data::Popup)((uint8_t*)data_ptr)[1];
-
-  if (result != DGUS_Data::Popup::CONFIRMED) return;
+  const DGUS_Data::EepromAction action = (DGUS_Data::EepromAction)((uint8_t*)data_ptr)[1];
 
   if (!screen.isPrinterIdle()) {
     screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BUSY));
     return;
   }
 
-  queue.enqueue_now(F("M502"));
-  queue.enqueue_now(F("M500"));
+  switch (action) {
+  case DGUS_Data::EepromAction::RESET:
+    settings.reset();
+    queue.enqueue_now(F("M502"));
+    queue.enqueue_now(F("M500"));
+    break;
+
+  case DGUS_Data::EepromAction::LOAD:
+    settings.load();
+    break;
+
+  case DGUS_Data::EepromAction::SAVE:
+    settings.save();
+    break;
+  }
+  screen.triggerScreenChange(DGUS_ScreenID::SETTINGS_MENU2);
 }
+
 
 void DGUSRxHandler::settingsExtra(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
@@ -957,9 +1062,186 @@ void DGUSRxHandler::brightness(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
 
   uint8_t brightness = ((uint8_t*)data_ptr)[1];
+  DGUSDisplay::displayDimmed = false;
   dgus.setBrightness(brightness);
 
   screen.triggerEEPROMSave();
+}
+
+// tx3m
+void DGUSRxHandler::dimBacklight(DGUS_VP &vp, void *data_ptr) {
+  UNUSED(vp);
+
+  if (DGUSDisplay::displayDimmed) {
+	DGUSDisplay::displayDimmed = false;
+    dgus.setBrightness(DGUSDisplay::getBrightness()); // unDim Backlight
+  }
+  else {
+	DGUSDisplay::displayDimmed = true;
+    dgus.setBrightness(1); // Dim backlight
+  }
+}
+
+// GCTODO rework  tx3m
+void DGUSRxHandler::stepsPerMmX(DGUS_VP& vp, void* data_ptr) {
+  const int32_t data = dgus.swapBytes(*(int32_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int32_t, float, 2>(data);
+  ExtUI::setAxisSteps_per_mm(value, ExtUI::axis_t::X);
+}
+
+void DGUSRxHandler::stepsPerMmY(DGUS_VP& vp, void* data_ptr) {
+  const int32_t data = dgus.swapBytes(*(int32_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int32_t, float, 2>(data);
+  ExtUI::setAxisSteps_per_mm(value, ExtUI::axis_t::Y);
+  // Auto save??
+  settings.save();
+  //  queue.enqueue_now_P(DGUS_CMD_EEPROM_SAVE);
+}
+
+void DGUSRxHandler::stepsPerMmZ(DGUS_VP& vp, void* data_ptr) {
+  const int32_t data = dgus.swapBytes(*(int32_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int32_t, float, 2>(data);
+  ExtUI::setAxisSteps_per_mm(value, ExtUI::axis_t::Z);
+}
+
+void DGUSRxHandler::stepsPerMmE(DGUS_VP& vp, void* data_ptr) {
+  const int32_t data = dgus.swapBytes(*(int32_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int32_t, float, 2>(data);
+  ExtUI::setAxisSteps_per_mm(value, ExtUI::extruder_t::E0);
+}
+
+void DGUSRxHandler::jerkStepsMmX(DGUS_VP& vp, void* data_ptr) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 1>(data);
+  ExtUI::setAxisMaxJerk_mm_s(value, ExtUI::axis_t::X);
+#else
+#endif
+}
+
+void DGUSRxHandler::jerkStepsMmY(DGUS_VP& vp, void* data_ptr) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 1>(data);
+  ExtUI::setAxisMaxJerk_mm_s(value, ExtUI::axis_t::Y);
+#else
+#endif
+}
+
+void DGUSRxHandler::jerkStepsMmZ(DGUS_VP& vp, void* data_ptr) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 1>(data);
+  ExtUI::setAxisMaxJerk_mm_s(value, ExtUI::axis_t::Z);
+#else
+#endif
+}
+
+void DGUSRxHandler::jerkStepsMmE(DGUS_VP& vp, void* data_ptr) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 1>(data);
+  ExtUI::setAxisMaxJerk_mm_s(value, ExtUI::extruder_t::E0);
+#else
+#endif
+}
+
+void DGUSRxHandler::junctionDeviation(DGUS_VP& vp, void* data_ptr) {
+#if HAS_JUNCTION_DEVIATION
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 3>(data);
+  ExtUI::setJunctionDeviation_mm(value);
+#else
+  screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_FEATURE_NOT_ENABLED));
+#endif
+}
+
+void DGUSRxHandler::linearAdvance(DGUS_VP& vp, void* data_ptr) {
+#if ENABLED(LIN_ADVANCE)
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 2>(data);
+  ExtUI::setLinearAdvance_mm_mm_s(value, ExtUI::extruder_t::E0);
+#else
+  dgus_screen_handler.SetStatusMessage(GET_TEXT_F(DGUS_MSG_FEATURE_NOT_ENABLED));
+#endif
+}
+
+void DGUSRxHandler::accelerationX(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setAxisMaxAcceleration_mm_s2(value, ExtUI::axis_t::X);
+}
+
+void DGUSRxHandler::accelerationY(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setAxisMaxAcceleration_mm_s2(value, ExtUI::axis_t::Y);
+}
+
+void DGUSRxHandler::accelerationZ(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setAxisMaxAcceleration_mm_s2(value, ExtUI::axis_t::Z);
+}
+
+void DGUSRxHandler::accelerationE(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setAxisMaxAcceleration_mm_s2(value, ExtUI::extruder_t::E0);
+}
+
+void DGUSRxHandler::accelerationPrint(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setPrintingAcceleration_mm_s2(value);
+}
+
+void DGUSRxHandler::accelerationRetract(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setRetractAcceleration_mm_s2(value);
+}
+
+void DGUSRxHandler::accelerationTravel(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const float value = dgus.fromFixedPoint<int16_t, float, 0>(data);
+  ExtUI::setTravelAcceleration_mm_s2(value);
+}
+
+void DGUSRxHandler::maxFeedRateX(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const feedRate_t value = dgus.fromFixedPoint<int16_t, feedRate_t, 0>(data);
+  ExtUI::setAxisMaxFeedrate_mm_s(value, ExtUI::axis_t::X);
+}
+
+void DGUSRxHandler::maxFeedRateY(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const feedRate_t value = dgus.fromFixedPoint<int16_t, feedRate_t, 0>(data);
+  ExtUI::setAxisMaxFeedrate_mm_s(value, ExtUI::axis_t::Y);
+}
+
+void DGUSRxHandler::maxFeedRateZ(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const feedRate_t value = dgus.fromFixedPoint<int16_t, feedRate_t, 0>(data);
+  ExtUI::setAxisMaxFeedrate_mm_s(value, ExtUI::axis_t::Z);
+}
+
+void DGUSRxHandler::maxFeedRateE(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const feedRate_t value = dgus.fromFixedPoint<int16_t, feedRate_t, 0>(data);
+  ExtUI::setAxisMaxFeedrate_mm_s(value, ExtUI::extruder_t::E0);
+}
+
+void DGUSRxHandler::minPrintFeedRate(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const feedRate_t value = dgus.fromFixedPoint<int16_t, feedRate_t, 1>(data);
+  ExtUI::setMinFeedrate_mm_s(value);
+}
+
+void DGUSRxHandler::minTravelFeedRate(DGUS_VP& vp, void* data_ptr) {
+  const int16_t data = Swap16(*(int16_t*)data_ptr);
+  const feedRate_t value = dgus.fromFixedPoint<int16_t, feedRate_t, 1>(data);
+  ExtUI::setMinTravelFeedrate_mm_s(value);
 }
 
 void DGUSRxHandler::debug(DGUS_VP &vp, void *data_ptr) {

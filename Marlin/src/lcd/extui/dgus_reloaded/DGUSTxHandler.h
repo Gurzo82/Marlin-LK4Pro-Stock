@@ -18,13 +18,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * jgbrown54 - Added Advanced Settings
  */
 #pragma once
 
 #include "DGUSDisplay.h"
 #include "definition/DGUS_VP.h"
-
-#define Swap16(val) (uint16_t((uint16_t(val) >> 8) | (uint16_t(val) << 8)))
 
 namespace DGUSTxHandler {
 
@@ -51,6 +50,7 @@ namespace DGUSTxHandler {
 
   void ablDisableIcon(DGUS_VP &);
   void ablGrid(DGUS_VP &);
+  void ablGridColor(DGUS_VP& vp);  // tx3m
 
   void filamentIcons(DGUS_VP &);
 
@@ -71,10 +71,35 @@ namespace DGUSTxHandler {
   void waitIcons(DGUS_VP &);
 
   void fanSpeed(DGUS_VP &);
-
+  void feedrateMMS(DGUS_VP& vp);  // tx3m
   void volume(DGUS_VP &);
 
   void brightness(DGUS_VP &);
+
+  // Motion settings tx3m
+  void stepsPerMmX(DGUS_VP& vp);
+  void stepsPerMmY(DGUS_VP& vp);
+  void stepsPerMmZ(DGUS_VP& vp);
+  void stepsPerMmE(DGUS_VP& vp);
+  void jerkStepsMmX(DGUS_VP& vp);
+  void jerkStepsMmY(DGUS_VP& vp);
+  void jerkStepsMmZ(DGUS_VP& vp);
+  void jerkStepsMmE(DGUS_VP& vp);
+  void junctionDeviation(DGUS_VP& vp);
+  void linearAdvance(DGUS_VP& vp);
+  void accelerationX(DGUS_VP& vp);
+  void accelerationY(DGUS_VP& vp);
+  void accelerationZ(DGUS_VP& vp);
+  void accelerationE(DGUS_VP& vp);
+  void accelerationPrint(DGUS_VP& vp);
+  void accelerationRetract(DGUS_VP& vp);
+  void accelerationTravel(DGUS_VP& vp);
+  void maxFeedRateX(DGUS_VP& vp);
+  void maxFeedRateY(DGUS_VP& vp);
+  void maxFeedRateZ(DGUS_VP& vp);
+  void maxFeedRateE(DGUS_VP& vp);
+  void minPrintFeedRate(DGUS_VP& vp);
+  void minTravelFeedRate(DGUS_VP& vp);
 
   void extraToString(DGUS_VP &);
   void extraPGMToString(DGUS_VP &);

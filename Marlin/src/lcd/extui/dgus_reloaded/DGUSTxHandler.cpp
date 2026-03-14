@@ -18,6 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * jgbrown54
+ *   Added Advanced Settings
+ *   Added data for Print Status
  */
 
 #include "../../../inc/MarlinConfigPre.h"
@@ -163,8 +166,9 @@
 
 void DGUSTxHandler::zPosition(DGUS_VP &vp) {
   const float position = ExtUI::isAxisPositionKnown(ExtUI::Z) ? planner.get_axis_position_mm(Z_AXIS) : 0;
-  const int32_t data = dgus.toFixedPoint<float, int32_t, 2>(int32_t(position * 50.0f) * 0.02f); // Round to 0.02
-  dgus.write((uint16_t)vp.addr, dgus.swapBytes(data));
+  // const int32_t data = dgus.toFixedPoint<float, int32_t, 2>(int32_t(position * 50.0f) * 0.02f); // Round to 0.02
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 2>(position); // tx3m it was this way on 2.1.2.1
+  dgus.write((uint16_t)vp.addr, dgus.swapBytes(data)); // tx3m
 }
 
 void DGUSTxHandler::elapsed(DGUS_VP &vp) {
@@ -183,14 +187,15 @@ void DGUSTxHandler::percent(DGUS_VP &vp) {
     case DGUS_Addr::STATUS_Percent_Complete: progress = 100; break;
   }
 
-  dgus.write((uint16_t)DGUS_Addr::STATUS_Percent, Swap16(progress));
+  // dgus.write((uint16_t)DGUS_Addr::STATUS_Percent, Swap16(progress));
+  dgus.write((uint16_t)vp.addr, Swap16(progress));  // tx3m
 }
 
 void DGUSTxHandler::statusIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
   if (ExtUI::isPrinting()) {
-    icons |= (uint16_t)DGUS_Data::StatusIcon::PAUSE;
+    icons = (uint16_t)DGUS_Data::StatusIcon::PAUSE;
 
     dgus.enableControl(DGUS_ScreenID::PRINT_STATUS,
                                DGUSDisplay::POPUP_WINDOW,
@@ -275,6 +280,7 @@ void DGUSTxHandler::stepIcons(DGUS_VP &vp) {
 }
 
 void DGUSTxHandler::ablDisableIcon(DGUS_VP &vp) {
+#if HAS_LEVELING
   uint16_t data;
 
   if (ExtUI::getLevelingActive()) {
@@ -293,6 +299,7 @@ void DGUSTxHandler::ablDisableIcon(DGUS_VP &vp) {
   }
 
   dgus.write((uint16_t)vp.addr, Swap16(data));
+#endif
 }
 
 void DGUSTxHandler::ablGrid(DGUS_VP &vp) {
@@ -304,11 +311,24 @@ void DGUSTxHandler::ablGrid(DGUS_VP &vp) {
   for (int16_t i = 0; i < DGUS_LEVEL_GRID_SIZE; i++) {
     point.x = i % (GRID_MAX_POINTS_X);
     point.y = i / (GRID_MAX_POINTS_X);
-    fixed = dgus.toFixedPoint<float, int16_t, 3>(ExtUI::getMeshPoint(point));
+    // fixed = dgus.toFixedPoint<float, int16_t, 3>(ExtUI::getMeshPoint(point));
+    fixed = dgus.toFixedPoint<float, int16_t, 3>((screen.probing_values[point.x][point.y]));  // tx3m use the value from the screen so that it can be updated even if the position is not known yet
+    DEBUG_ECHOLNPAIR_F("grid x ", point.x, " y ", point.y, " value ", fixed);
     data[i] = Swap16(fixed);
   }
-
+  DEBUG_ECHOLNPAIR_F("sending byte count", sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
   dgus.write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
+}
+
+void DGUSTxHandler::ablGridColor(DGUS_VP& vp) {
+  // Set color for each value
+  for (int point = 0; point < DGUS_LEVEL_GRID_SIZE; point++)     {
+    uint16_t color = Swap16(COLOR_WHITE);
+    if ((screen.probing_icons[point < 16 ? 0 : 1] & (1U << (point % 16))) != 0)         {
+      color = Swap16(COLOR_GREEN);
+    }
+    dgus.write((uint16_t)vp.addr + point * DGUS_SP_VARIABLE_LEN + (int)DGUS_SP_Variable::COLOR, color);
+  }
 }
 
 void DGUSTxHandler::filamentIcons(DGUS_VP &vp) {
@@ -515,9 +535,16 @@ void DGUSTxHandler::fanSpeed(DGUS_VP &vp) {
   switch (vp.addr) {
     default: return;
     case DGUS_Addr::FAN0_Speed: fan_speed = ExtUI::getTargetFan_percent(ExtUI::FAN0); break;
+    case DGUS_Addr::FAN0_Speed_CUR: fan_speed = ExtUI::getActualFan_percent(ExtUI::FAN0); break;  // tx3m
   }
 
   dgus.write((uint16_t)vp.addr, Swap16(fan_speed));
+}
+
+void DGUSTxHandler::feedrateMMS(DGUS_VP& vp) {
+  // TODO: Read value from planner/stepper?
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(motion.mms_scaled());
+  dgus.write((uint16_t)vp.addr, Swap16(data));
 }
 
 void DGUSTxHandler::volume(DGUS_VP &vp) {
@@ -530,6 +557,140 @@ void DGUSTxHandler::brightness(DGUS_VP &vp) {
   const uint16_t brightness = dgus.getBrightness();
 
   dgus.write((uint16_t)vp.addr, Swap16(brightness));
+}
+
+// tx3m up until extraToString
+void DGUSTxHandler::stepsPerMmX(DGUS_VP& vp) {
+  const int32_t data = dgus.toFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::X));
+  dgus.write((uint16_t)vp.addr, dgus.swapBytes(data));
+}
+
+void DGUSTxHandler::stepsPerMmY(DGUS_VP& vp) {
+  const int32_t data = dgus.toFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::Y));
+  dgus.write((uint16_t)vp.addr, dgus.swapBytes(data));
+}
+
+void DGUSTxHandler::stepsPerMmZ(DGUS_VP& vp) {
+  const int32_t data = dgus.toFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::axis_t::Z));
+  dgus.write((uint16_t)vp.addr, dgus.swapBytes(data));
+}
+
+void DGUSTxHandler::stepsPerMmE(DGUS_VP& vp) {
+  const int32_t data = dgus.toFixedPoint<float, int32_t, 2>(ExtUI::getAxisSteps_per_mm(ExtUI::extruder_t::E0));
+  dgus.write((uint16_t)vp.addr, dgus.swapBytes(data));
+}
+
+void DGUSTxHandler::jerkStepsMmX(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::axis_t::X));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::jerkStepsMmY(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::axis_t::Y));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::jerkStepsMmZ(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::axis_t::Z));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::jerkStepsMmE(DGUS_VP& vp) {
+#if ENABLED(CLASSIC_JERK)
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 1>(ExtUI::getAxisMaxJerk_mm_s(ExtUI::extruder_t::E0));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::junctionDeviation(DGUS_VP& vp) {
+#if HAS_JUNCTION_DEVIATION
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 3>(ExtUI::getJunctionDeviation_mm()));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::linearAdvance(DGUS_VP& vp) {
+#if ENABLED(LIN_ADVANCE)
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 2>(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::extruder_t::E0));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+#else
+#endif
+}
+
+void DGUSTxHandler::accelerationX(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::axis_t::X));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::accelerationY(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::axis_t::Y));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::accelerationZ(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::axis_t::Z));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::accelerationE(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::extruder_t::E0));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::accelerationPrint(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getPrintingAcceleration_mm_s2());
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::accelerationRetract(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getRetractAcceleration_mm_s2());
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::accelerationTravel(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<float, int16_t, 0>(ExtUI::getTravelAcceleration_mm_s2());
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::maxFeedRateX(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::axis_t::X));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::maxFeedRateY(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::axis_t::Y));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::maxFeedRateZ(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::axis_t::Z));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::maxFeedRateE(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<feedRate_t, int16_t, 0>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::extruder_t::E0));
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::minPrintFeedRate(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<feedRate_t, int16_t, 1>(ExtUI::getMinFeedrate_mm_s());
+  dgus.write((uint16_t)vp.addr, Swap16(data));
+}
+
+void DGUSTxHandler::minTravelFeedRate(DGUS_VP& vp) {
+  const int16_t data = dgus.toFixedPoint<feedRate_t, int16_t, 1>(ExtUI::getMinTravelFeedrate_mm_s());
+  dgus.write((uint16_t)vp.addr, Swap16(data));
 }
 
 void DGUSTxHandler::extraToString(DGUS_VP &vp) {
