@@ -432,6 +432,18 @@ void DGUSRxHandler::runoutControl(DGUS_VP& vp, void* data_ptr) {
 void DGUSRxHandler::zOffset(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
 
+  // tx3m If printing → treat as baby-step
+  if (ExtUI::isPrinting()) {
+    const int16_t data = BE16_P(data_ptr);
+    const float offset = dgus.fromFixedPoint<int16_t, float, 2>(data);
+    // Calculate delta relative to current offset
+    const float delta = offset - ExtUI::getZOffset_mm();
+    const int16_t steps = ExtUI::mmToWholeSteps(delta, ExtUI::Z);
+    ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);   // real baby-step
+    screen.triggerFullUpdate();
+    return;
+  }
+
   if (TERN0(NO_MOTION_BEFORE_HOMING, !ExtUI::isAxisPositionKnown(ExtUI::Z))) {
     screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_HOMING_REQUIRED));
     return;
@@ -445,10 +457,10 @@ void DGUSRxHandler::zOffset(DGUS_VP &vp, void *data_ptr) {
   const int16_t data = BE16_P(data_ptr);
   const float offset = dgus.fromFixedPoint<int16_t, float, 2>(data);
 
-  // const int16_t steps = ExtUI::mmToWholeSteps(offset - ExtUI::getZOffset_mm(), ExtUI::Z);
-  // tx3m fix incorrect direction
-  const float delta = ExtUI::getZOffset_mm() - offset;
-  const int16_t steps = ExtUI::mmToWholeSteps(delta, ExtUI::Z);
+  const int16_t steps = ExtUI::mmToWholeSteps(offset - ExtUI::getZOffset_mm(), ExtUI::Z);
+  // tx3m fix incorrect direction N.B. Fixing the motion direction breaks the actual value shown. For now, keep the default implementation
+  // const float delta = ExtUI::getZOffset_mm() - offset;
+  // const int16_t steps = ExtUI::mmToWholeSteps(delta, ExtUI::Z);
 
 
   ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
@@ -476,12 +488,14 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
   switch (screen.offset_steps) {
     default: return;
     case DGUS_Data::StepSize::MMP1:
-      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f), ExtUI::Z);
-      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.1f : 0.1f), ExtUI::Z);  // tx3m fix incorrect direction
+      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f), ExtUI::Z);
+      // tx3m fix incorrect direction N.B. Fixing the motion direction breaks the actual value shown. For now, keep the default implementation
+      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.1f : 0.1f), ExtUI::Z);  
       break;
     case DGUS_Data::StepSize::MMP01:
-      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.01f : -0.01f), ExtUI::Z);
-      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.01f : 0.01f), ExtUI::Z);  // tx3m fix incorrect direction
+      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.01f : -0.01f), ExtUI::Z);
+      // tx3m fix incorrect direction N.B. Fixing the motion direction breaks the actual value shown. For now, keep the default implementation
+      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.01f : 0.01f), ExtUI::Z);
       break;
   }
 
