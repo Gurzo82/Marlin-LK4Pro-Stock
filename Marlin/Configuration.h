@@ -74,7 +74,7 @@
 //#define LK5_Pro //  for LK5pro
 #define LKPro_BLTOUCH // for LK4 and LK5
 
-#define LKPro_FW_VERSION "2.1.3-b3/tx3m"
+#define LKPro_FW_VERSION "2.1.3-b3/tx3mV12"
 #define LCD_HEIGHT 4 // number of message lines in the wait screen
 
 //#define DEBUG_DGUSLCD
@@ -143,7 +143,7 @@
 
 // Name displayed in the LCD "Ready" message and Info menu
 #if defined(LK4_Pro)
-  #define CUSTOM_MACHINE_NAME "LK4Pro tx3m V9"
+  #define CUSTOM_MACHINE_NAME "LK4Pro tx3m"
 #elif defined(LK5_Pro)
   #define CUSTOM_MACHINE_NAME "LK5 Pro"
 #else
