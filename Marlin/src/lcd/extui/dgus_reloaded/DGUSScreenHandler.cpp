@@ -44,8 +44,12 @@ uint8_t DGUSScreenHandler::debug_count = 0;
 DGUS_Data::StepSize DGUSScreenHandler::offset_steps = DGUS_Data::StepSize::MMP1;
 DGUS_Data::StepSize DGUSScreenHandler::move_steps = DGUS_Data::StepSize::MM10;
 
-uint16_t DGUSScreenHandler::probing_icons[] = { 0, 0 };
-float DGUSScreenHandler::probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
+#if HAS_LEVELING
+  uint16_t DGUSScreenHandler::probing_icons[] = { 0, 0 };
+  float DGUSScreenHandler::probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
+  #else
+  float DGUSScreenHandler::baby_offset = 0;
+#endif
 
 DGUS_Data::Extruder DGUSScreenHandler::filament_extruder = DGUS_Data::Extruder::CURRENT;
 uint16_t DGUSScreenHandler::filament_length = DGUS_DEFAULT_FILAMENT_LEN;
@@ -288,6 +292,9 @@ void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos, const f
 
 void DGUSScreenHandler::printTimerStarted() {
   triggerScreenChange(DGUS_ScreenID::PRINT_STATUS);
+  #if !HAS_LEVELING  
+    baby_offset = 0;
+  #endif
 }
 
 void DGUSScreenHandler::printTimerPaused() {

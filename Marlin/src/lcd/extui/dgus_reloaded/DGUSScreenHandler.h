@@ -101,8 +101,12 @@ public:
   static DGUS_Data::StepSize offset_steps;
   static DGUS_Data::StepSize move_steps;
 
-  static uint16_t probing_icons[2];
-  static float probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];  // tx3m as it was in the old working FW
+  #if HAS_LEVELING
+    static uint16_t probing_icons[2];
+    static float probing_values[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];  // tx3m as it was in the old working FW
+  #else
+    static float baby_offset;
+  #endif
 
   static DGUS_Data::Extruder filament_extruder;
   static uint16_t filament_length;

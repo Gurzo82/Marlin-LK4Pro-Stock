@@ -254,6 +254,7 @@ const struct DGUS_VP vp_list[] PROGMEM = {
                     nullptr,
                     &DGUSTxHandler::stepperStatus),
 
+#if HAS_LEVELING
   VP_HELPER_TX_AUTO(DGUS_Addr::LEVEL_OFFSET_Current,
                     &probe.offset.z,
                     (&DGUSTxHandler::extraToFixedPoint<float, 2>)),
@@ -268,6 +269,11 @@ const struct DGUS_VP vp_list[] PROGMEM = {
 
   // VP_HELPER(DGUS_Addr::LEVEL_AUTO_Grid, sizeof(int16_t) * DGUS_LEVEL_GRID_SIZE, VPFLAG_NONE, nullptr, nullptr, &DGUSTxHandler::ablGrid),
   VP_HELPER(DGUS_Addr::SP_LEVEL_AUTO_Grid, 2, VPFLAG_NONE, nullptr, nullptr, &DGUSTxHandler::ablGridColor),
+#else
+    VP_HELPER_TX_AUTO(DGUS_Addr::LEVEL_OFFSET_Current,
+                        &DGUSScreenHandler::baby_offset,
+                        (&DGUSTxHandler::extraToFixedPoint<float, 2>)),
+#endif
 
   VP_HELPER_TX_EXTRA(DGUS_Addr::LEVEL_PROBING_Icons1,
                      &DGUSScreenHandler::probing_icons[0],
