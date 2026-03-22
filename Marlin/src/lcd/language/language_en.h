@@ -972,6 +972,9 @@ namespace LanguageNarrow_en {
   LSTR DGUS_MSG_RESET_EEPROM              = _UxGT("EEPROM reset");
   LSTR DGUS_MSG_EEPROM_SAVED              = _UxGT("EEPROM Data Saved");  // tx3m
   LSTR DGUS_MSG_EEPROM_LOADED             = _UxGT("EEPROM Data Loaded");  // tx3m
+  LSTR DGUS_MSG_NOT_IMPLEMENTED           = _UxGT("Feature not yet implemented");  // tx3m
+  LSTR DGUS_MSG_NO_Z_OFFSET_PRINTING      = _UxGT("No Z-offset changes while printing");  // tx3m
+  LSTR DGUS_MSG_BABYSTEP_CHANGED          = _UxGT("Baby-step changed");  // tx3m
   LSTR DGUS_MSG_WRITE_EEPROM_FAILED       = _UxGT("EEPROM write failed");
   LSTR DGUS_MSG_READ_EEPROM_FAILED        = _UxGT("EEPROM read failed");
   LSTR DGUS_MSG_FILAMENT_RUNOUT           = _UxGT("Filament runout E%d");

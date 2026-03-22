@@ -81,8 +81,7 @@ namespace DGUS_Data {
     LOAD = 3
   };
 
-  // tx3m changed to work as expected
-  // Edit 19 Mar 2026: Reverted as screen FW for 2.1.2.1 does send 1 for extrude
+  // tx3m added unload and load as they are part of the screen
   enum class FilamentMove : uint8_t {
     RETRACT = 0,
     EXTRUDE = 1,
