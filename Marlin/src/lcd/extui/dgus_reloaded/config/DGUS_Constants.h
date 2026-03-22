@@ -46,11 +46,11 @@
 #endif
 
 #ifndef DGUS_PLA_TEMP_HOTEND
-  #define DGUS_PLA_TEMP_HOTEND 200
+  #define DGUS_PLA_TEMP_HOTEND 203 // tx3m
 #endif
 
 #ifndef DGUS_PLA_TEMP_BED
-  #define DGUS_PLA_TEMP_BED 60
+  #define DGUS_PLA_TEMP_BED 55 // tx3m
 #endif
 
 #ifndef DGUS_ABS_TEMP_HOTEND
@@ -62,7 +62,7 @@
 #endif
 
 #ifndef DGUS_PETG_TEMP_HOTEND
-  #define DGUS_PETG_TEMP_HOTEND 240
+  #define DGUS_PETG_TEMP_HOTEND 228  // tx3m
 #endif
 
 #ifndef DGUS_PETG_TEMP_BED
