@@ -134,7 +134,7 @@ enum class DGUS_Addr : uint16_t {
   GCODE_Execute           = 0x2026,
   //jgbrown54 - Changed name
   //EEPROM_Reset              = 0x2027, // Popup / Data: DGUS_Data::Popup
-  EEPROM_Control            = 0x2027, // Popup / Data: DGUS_Data::Popup
+  EEPROM_Control          = 0x2027, // Popup / Data: DGUS_Data::Popup
   SETTINGS2_Extra         = 0x2028, // Data: DGUS_Data::Extra
   PID_Select              = 0x2029, // Data: DGUS_Data::Heater
   PID_SetTemp             = 0x202A, // Type: Integer (16 bits unsigned)
@@ -144,10 +144,11 @@ enum class DGUS_Addr : uint16_t {
   WAIT_Abort              = 0x202E, // Popup / Data: DGUS_Data::Popup
   WAIT_Continue           = 0x202F,
   // tx3m
-  DIM_Backlight             = 0x2030, // Dim Backlight
+  DIM_Backlight           = 0x2030, // Dim Backlight
   FILAMENT_Load_Unload    = 0x2040, // GCTODO
   RUNOUT_Control          = 0x2041, // GCTODO
   STATUS_PrintPause       = 0x2042, //
+  INFOS_Screen_Version    = 0x2050, // DGUS_VERSION_LEN = 16 chars
 
   // WRITE-ONLY VARIABLES
 
@@ -184,6 +185,7 @@ enum class DGUS_Addr : uint16_t {
   LEVEL_OFFSET_Current    = 0x3106, // Type: Fixed point, 2 decimals (16 bits signed)
   LEVEL_OFFSET_StepIcons  = 0x3107, // Bits: DGUS_Data::StepIcon
   LEVEL_AUTO_DisableIcon  = 0x3108, // Data: DGUS_Data::Status
+
   LEVEL_AUTO_Grid         = 0x3109, // 0x3109 - 0x3121 / Type: Fixed point, 3 decimals (16 bits signed)
   LEVEL_PROBING_Icons1    = 0x3122, // Type: Integer (16 bits unsigned) / Each bit represents a grid point
   LEVEL_PROBING_Icons2    = 0x3123, // Type: Integer (16 bits unsigned) / Each bit represents a grid point
