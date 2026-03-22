@@ -677,7 +677,22 @@ void DGUSRxHandler::filamentMove(DGUS_VP &vp, void *data_ptr) {
     case DGUS_Data::FilamentMove::EXTRUDE:
       UI_INCREMENT_BY(AxisPosition_mm, (float)screen.filament_length, extruder);
       break;
+    // tx3m
+    case DGUS_Data::FilamentMove::UNLOAD:
+      // UI_DECREMENT_BY(AxisPosition_mm, (float)screen.filament_length, extruder);
+      screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_NOT_IMPLEMENTED));
+      break;
+    // tx3m
+    case DGUS_Data::FilamentMove::LOAD:
+      //UI_INCREMENT_BY(AxisPosition_mm, (float)screen.filament_length, extruder);
+      screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_NOT_IMPLEMENTED));
+      break;
   }
+}
+
+// tx3m - Added Filament Load/Unload which is the same as Move but without the temp check
+void DGUSRxHandler::filamentLoadUnload(DGUS_VP& vp, void* data_ptr) {
+  filamentMove(vp, data_ptr);
 }
 
 void DGUSRxHandler::home(DGUS_VP &vp, void *data_ptr) {

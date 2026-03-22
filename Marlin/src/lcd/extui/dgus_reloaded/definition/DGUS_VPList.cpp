@@ -141,6 +141,9 @@ const struct DGUS_VP vp_list[] PROGMEM = {
   VP_HELPER_RX(DGUS_Addr::FILAMENT_SetLength, &DGUSRxHandler::filamentLength),
   VP_HELPER_RX(DGUS_Addr::FILAMENT_Move,      &DGUSRxHandler::filamentMove),
 
+  // tx3m
+  VP_HELPER_RX(DGUS_Addr::FILAMENT_Load_Unload, &DGUSRxHandler::filamentLoadUnload),
+
   VP_HELPER_RX(DGUS_Addr::MOVE_Home,    &DGUSRxHandler::home),
   VP_HELPER_RX(DGUS_Addr::MOVE_SetX,    &DGUSRxHandler::move),
   VP_HELPER_RX(DGUS_Addr::MOVE_SetY,    &DGUSRxHandler::move),

@@ -81,10 +81,13 @@ namespace DGUS_Data {
     LOAD = 3
   };
 
-  // tx3m change to work as expected
+  // tx3m changed to work as expected
+  // Edit 19 Mar 2026: Reverted as screen FW for 2.1.2.1 does send 1 for extrude
   enum class FilamentMove : uint8_t {
-    EXTRUDE = 0,
-    RETRACT = 1
+    RETRACT = 0,
+    EXTRUDE = 1,
+    UNLOAD  = 2,
+    LOAD    = 3
   };
 
   enum class Axis : uint8_t {

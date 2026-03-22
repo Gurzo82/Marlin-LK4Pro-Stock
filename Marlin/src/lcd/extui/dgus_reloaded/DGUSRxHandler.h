@@ -66,6 +66,7 @@ namespace DGUSRxHandler {
   void filamentSelect(DGUS_VP &, void *);
   void filamentLength(DGUS_VP &, void *);
   void filamentMove(DGUS_VP &, void *);
+  void filamentLoadUnload(DGUS_VP&, void*);  // tx3m
 
   void home(DGUS_VP &, void *);
   void move(DGUS_VP &, void *);
