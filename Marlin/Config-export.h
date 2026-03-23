@@ -2,7 +2,7 @@
  * Config.h - Marlin Firmware distilled configuration
  * Usage: Place this file in the 'Marlin' folder with the name 'Config.h'.
  *
- * Exported by Marlin build on 2026-03-17 at 23:18:43.
+ * Exported by Marlin build on 2026-03-22 at 23:21:28.
  */
 
 //
@@ -19,7 +19,7 @@
 #define LGT_MAC
 #define LK4_Pro
 #define LCD_HEIGHT                               4
-#define LKPro_FW_VERSION                         "2.1.3-b3/tx3mV12"
+#define LKPro_FW_VERSION                         "2.1.3-b3/tx3mV19"
 
 //
 // EEPROM
@@ -431,6 +431,5 @@
 #define BABYSTEP_MULTIPLICATOR_Z                 1
 #define BABYSTEP_ZPROBE_OFFSET
 #define BABYSTEPPING
-#define BABYSTEP_INVERT_Z
 #define BABYSTEP_MULTIPLICATOR_XY                1
 #define BABYSTEP_ALWAYS_AVAILABLE

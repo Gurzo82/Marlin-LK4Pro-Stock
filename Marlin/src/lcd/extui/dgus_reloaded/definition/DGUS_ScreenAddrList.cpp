@@ -72,9 +72,9 @@ constexpr DGUS_Addr LIST_PRINT_STATUS[] PROGMEM = {
 };
 
 constexpr DGUS_Addr LIST_PRINT_ADJUST[] PROGMEM = {
-  DGUS_Addr::TEMP_Current_H0,
+  DGUS_Addr::TEMP_Current_H0,  // tx3m
   DGUS_Addr::TEMP_Target_H0,
-  DGUS_Addr::TEMP_Current_Bed,
+  DGUS_Addr::TEMP_Current_Bed,  // tx3m
   DGUS_Addr::TEMP_Target_Bed,
   DGUS_Addr::FAN0_Speed,
   DGUS_Addr::ADJUST_Feedrate,
@@ -141,16 +141,14 @@ constexpr DGUS_Addr LIST_LEVELING_AUTOMATIC[] PROGMEM = {
   DGUS_Addr::TEMP_Target_H0,
   DGUS_Addr::TEMP_Current_Bed,
   DGUS_Addr::TEMP_Target_Bed,
-  // DGUS_Addr::LEVEL_AUTO_DisableIcon,
+  DGUS_Addr::LEVEL_AUTO_DisableIcon,
   DGUS_Addr::LEVEL_AUTO_Grid,
   DGUS_Addr::END
 };
 
 constexpr DGUS_Addr LIST_LEVELING_PROBING[] PROGMEM = {
-  // DGUS_Addr::LEVEL_PROBING_Icons1,
-  // DGUS_Addr::LEVEL_PROBING_Icons2,
-  DGUS_Addr::SP_LEVEL_AUTO_Grid,  // tx3m
-  DGUS_Addr::LEVEL_AUTO_Grid,  // tx3m
+  DGUS_Addr::LEVEL_PROBING_Icons1,
+  DGUS_Addr::LEVEL_PROBING_Icons2,
   DGUS_Addr::END
 };
 

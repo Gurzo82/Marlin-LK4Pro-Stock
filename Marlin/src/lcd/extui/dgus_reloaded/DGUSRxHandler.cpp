@@ -246,7 +246,7 @@ void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
   ExtUI::resumePrint();
 }
 
-// tx3m
+// tx3m - Used on a previous Longer FW version (with a single pause/resume button). Most likely won't be needed or used anymore, but keep for reference
 void DGUSRxHandler::printPauseResume(DGUS_VP& vp, void* data_ptr) {
   if (ExtUI::isPrinting()) {
     // confirm pause
@@ -312,7 +312,7 @@ void DGUSRxHandler::babystep(DGUS_VP &vp, void *data_ptr) {
   }
 
   ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
-  screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BABYSTEP_CHANGED));
+  screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BABYSTEP_CHANGED));  // tx3m
 
   screen.triggerEEPROMSave();
   screen.triggerFullUpdate();
@@ -484,7 +484,31 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
       break;
   }
 
-  ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
+  // tx3m this does not work as expected so adjust only the Z offset and then do a relative move
+  // ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
+
+  const float movement = (adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f);
+  const float new_offset = ExtUI::getZOffset_mm() + movement;
+
+  // Update stored offset
+  ExtUI::setZOffset_mm(new_offset);
+
+  bool TEST_1 = false;
+  // Apply matching physical move (relative Z)
+  char cmd[32];
+  if (TEST_1){
+    snprintf(cmd, sizeof(cmd), "G0 Z%.3f", double(movement));
+    queue.inject_P(PSTR("G91"));
+    queue.inject(cmd); // This contains G0 Z...
+    queue.inject_P(PSTR("G90"));
+
+  } else {
+    char float_str[10];
+    // Convert float to string: (value, total width, precision, buffer)
+    dtostrf(movement, 1, 3, float_str);
+    snprintf(cmd, sizeof(cmd), "G91\nG0 Z%s F600\nG90", float_str);
+    queue.inject(cmd);
+  }
 
   screen.triggerEEPROMSave();
   screen.triggerFullUpdate();

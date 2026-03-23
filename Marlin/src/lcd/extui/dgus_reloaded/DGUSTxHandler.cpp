@@ -187,8 +187,7 @@ void DGUSTxHandler::percent(DGUS_VP &vp) {
     case DGUS_Addr::STATUS_Percent_Complete: progress = 100; break;
   }
 
-  // dgus.write((uint16_t)DGUS_Addr::STATUS_Percent, Swap16(progress));
-  dgus.write((uint16_t)vp.addr, Swap16(progress));  // tx3m
+  dgus.write((uint16_t)DGUS_Addr::STATUS_Percent, Swap16(progress));
 }
 
 void DGUSTxHandler::statusIcons(DGUS_VP &vp) {

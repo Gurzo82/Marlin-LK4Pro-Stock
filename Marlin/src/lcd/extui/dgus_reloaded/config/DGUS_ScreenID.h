@@ -51,6 +51,7 @@ enum class DGUS_ScreenID : uint8_t {
   ADVANCED_SETTINGS_1 = 25,
   ADVANCED_SETTINGS_2 = 26,
   ADVANCED_SETTINGS_3 = 27,
+  EEPROM_CONTROL      = 28,  // tx3m
   PAUSE_CONFIRM       = 206,
   RESUME_CONFIRM      = 208,
   // end of jgbrown54 additions

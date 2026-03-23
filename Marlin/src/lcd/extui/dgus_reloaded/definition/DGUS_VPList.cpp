@@ -156,7 +156,6 @@ const struct DGUS_VP vp_list[] PROGMEM = {
 
   //jgbrown54 - Changed EEPROM_Reset to EEPROM_Control
   //VP_HELPER_RX(DGUS_Addr::EEPROM_Reset, &DGUSRxHandler::ResetEEPROM),
-  // VP_HELPER_RX(DGUS_Addr::EEPROM_Control, &DGUSRxHandler::EEPROMControl),
   VP_HELPER_RX(DGUS_Addr::EEPROM_Control, &DGUSRxHandler::controlEEPROM),  // tx3m
 
   VP_HELPER_RX(DGUS_Addr::SETTINGS2_Extra, &DGUSRxHandler::settingsExtra),
