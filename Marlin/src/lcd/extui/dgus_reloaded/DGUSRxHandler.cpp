@@ -248,6 +248,9 @@ void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
 
 // tx3m - Used on a previous Longer FW version (with a single pause/resume button). Most likely won't be needed or used anymore, but keep for reference
 void DGUSRxHandler::printPauseResume(DGUS_VP& vp, void* data_ptr) {
+  UNUSED(vp);
+  UNUSED(data_ptr);
+  
   if (ExtUI::isPrinting()) {
     // confirm pause
     screen.triggerScreenChange(DGUS_ScreenID::PAUSE_CONFIRM);
@@ -474,13 +477,9 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
     default: return;
     case DGUS_Data::StepSize::MMP1:
       steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f), ExtUI::Z);
-      // tx3m fix incorrect direction N.B. Fixing the motion direction breaks the actual value shown. For now, keep the default implementation
-      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.1f : 0.1f), ExtUI::Z);  
       break;
     case DGUS_Data::StepSize::MMP01:
       steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.01f : -0.01f), ExtUI::Z);
-      // tx3m fix incorrect direction N.B. Fixing the motion direction breaks the actual value shown. For now, keep the default implementation
-      // steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? -0.01f : 0.01f), ExtUI::Z);
       break;
   }
 
@@ -493,22 +492,12 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
   // Update stored offset
   ExtUI::setZOffset_mm(new_offset);
 
-  bool TEST_1 = false;
   // Apply matching physical move (relative Z)
   char cmd[32];
-  if (TEST_1){
-    snprintf(cmd, sizeof(cmd), "G0 Z%.3f", double(movement));
-    queue.inject_P(PSTR("G91"));
-    queue.inject(cmd); // This contains G0 Z...
-    queue.inject_P(PSTR("G90"));
-
-  } else {
-    char float_str[10];
-    // Convert float to string: (value, total width, precision, buffer)
-    dtostrf(movement, 1, 3, float_str);
-    snprintf(cmd, sizeof(cmd), "G91\nG0 Z%s F600\nG90", float_str);
-    queue.inject(cmd);
-  }
+  char float_str[10];
+  dtostrf(movement, 1, 3, float_str);
+  snprintf(cmd, sizeof(cmd), "G91\nG0 Z%s F600\nG90", float_str);
+  queue.inject(cmd);
 
   screen.triggerEEPROMSave();
   screen.triggerFullUpdate();
