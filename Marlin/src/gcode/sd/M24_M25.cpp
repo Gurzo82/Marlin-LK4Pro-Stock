@@ -99,6 +99,10 @@ void GcodeSuite::M25() {
 
   #if ENABLED(PARK_HEAD_ON_PAUSE)
 
+    // tx3m - Nothing to pause, e.g. the host's M25 after the print was aborted from the LCD.
+    // Don't park the head and wait for the user.
+    if (!marlin.printJobOngoing() && !marlin.printingIsPaused()) return;
+
     M125();
 
   #else
