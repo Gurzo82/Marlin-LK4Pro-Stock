@@ -471,22 +471,16 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
   }
 
   const DGUS_Data::Adjust adjust = (DGUS_Data::Adjust)((uint8_t*)data_ptr)[1];
-  int16_t steps;
+  float movement;
 
   switch (screen.offset_steps) {
     default: return;
-    case DGUS_Data::StepSize::MMP1:
-      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f), ExtUI::Z);
-      break;
-    case DGUS_Data::StepSize::MMP01:
-      steps = ExtUI::mmToWholeSteps((adjust == DGUS_Data::Adjust::INCREMENT ? 0.01f : -0.01f), ExtUI::Z);
-      break;
+    case DGUS_Data::StepSize::MMP1:  movement = 0.1f;  break;
+    case DGUS_Data::StepSize::MMP01: movement = 0.01f; break;
   }
+  if (adjust != DGUS_Data::Adjust::INCREMENT) movement = -movement;
 
-  // tx3m this does not work as expected so adjust only the Z offset and then do a relative move
-  // ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
-
-  const float movement = (adjust == DGUS_Data::Adjust::INCREMENT ? 0.1f : -0.1f);
+  // tx3m smartAdjustAxis_steps() does not work as expected so adjust only the Z offset and then do a relative move
   const float new_offset = ExtUI::getZOffset_mm() + movement;
 
   // Update stored offset
@@ -1052,7 +1046,7 @@ void DGUSRxHandler::waitAbort(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
-  ExtUI::stopPrint();
+  abortPrint();  // tx3m
 
   screen.triggerFullUpdate();
 }
