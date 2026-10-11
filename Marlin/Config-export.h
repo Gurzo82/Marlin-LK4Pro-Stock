@@ -2,7 +2,7 @@
  * Config.h - Marlin Firmware distilled configuration
  * Usage: Place this file in the 'Marlin' folder with the name 'Config.h'.
  *
- * Exported by Marlin build on 2026-03-22 at 23:21:28.
+ * Exported by Marlin build on 2026-10-11 at 00:07:22.
  */
 
 //
@@ -19,7 +19,7 @@
 #define LGT_MAC
 #define LK4_Pro
 #define LCD_HEIGHT                               4
-#define LKPro_FW_VERSION                         "2.1.3-b3/tx3mV19"
+#define LKPro_FW_VERSION                         "2.1.3-b3/tx3mV25"
 
 //
 // EEPROM
@@ -298,13 +298,13 @@
 #define MANUAL_FEEDRATE                          { 50*60, 50*60, 4*60, 2*60 }
 #define LONG_FILENAME_WRITE_SUPPORT
 #define DGUS_TX_BUFFER_SIZE                      48
+#define NO_LCD_SERIAL_PORT_WARNING
 #define POWER_LOSS_RECOVERY
 #define LONG_FILENAME_HOST_SUPPORT
 #define SDCARD_CONNECTION                        LCD
 #define SDSORT_GCODE                             false
 #define SDSORT_USES_STACK                        true
 #define SDSORT_QUICK                             true
-#define REINIT_NOISY_LCD
 #define SD_FINISHED_STEPPERRELEASE               true
 #define SD_FINISHED_RELEASECOMMAND               "M84"
 #define BOOTSCREEN_TIMEOUT                       3000

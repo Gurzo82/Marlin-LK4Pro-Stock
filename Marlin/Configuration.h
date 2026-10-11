@@ -74,7 +74,7 @@
 //#define LK5_Pro //  for LK5pro
 #define LKPro_BLTOUCH // for LK4 and LK5
 
-#define LKPro_FW_VERSION "2.1.3-b3/tx3mV19"  // versions above 100 use INPUT_SHAPING
+#define LKPro_FW_VERSION "2.1.3-b3/tx3mV25"  // versions above 100 use INPUT_SHAPING
 #define LCD_HEIGHT 4 // number of message lines in the wait screen
 
 //#define DEBUG_DGUSLCD
