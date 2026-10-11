@@ -32,6 +32,7 @@
 #include "definition/DGUS_ScreenSetup.h"
 
 #include "../../../gcode/queue.h"
+#include "../../../module/printcounter.h"
 
 uint8_t DGUSScreenHandler::debug_count = 0;
 
@@ -69,6 +70,8 @@ bool DGUSScreenHandler::full_update = false;
 
 DGUS_ScreenID DGUSScreenHandler::wait_return_screenID = DGUS_ScreenID::HOME;
 bool DGUSScreenHandler::wait_continue = false;
+
+bool DGUSScreenHandler::print_aborted = false;  // tx3m
 
 bool DGUSScreenHandler::leveling_active = false;
 
@@ -166,6 +169,13 @@ void DGUSScreenHandler::printerKilled(FSTR_P const error, FSTR_P const component
 }
 
 void DGUSScreenHandler::userConfirmRequired(const char * const msg) {
+  // tx3m - While a paused print is parked, stay on PRINT_STATUS. Its Resume button continues.
+  if (isParkedForResume()) {
+    setStatusMessage(msg, 0);
+    dgus.playSound(3);
+    return;
+  }
+
   setMessageLine_P(NUL_STR, 1);
   setMessageLine(msg, 2);
   setMessageLine_P(NUL_STR, 3);
@@ -291,6 +301,8 @@ void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos, const f
 }
 
 void DGUSScreenHandler::printTimerStarted() {
+  print_aborted = false;  // tx3m
+  if (print_job_timer.isPaused()) setStatusMessage(FPSTR(NUL_STR), 0);  // tx3m - Resuming: clear "Print Paused"
   triggerScreenChange(DGUS_ScreenID::PRINT_STATUS);
   #if !HAS_LEVELING  
     baby_offset = 0;
@@ -298,6 +310,8 @@ void DGUSScreenHandler::printTimerStarted() {
 }
 
 void DGUSScreenHandler::printTimerPaused() {
+  // tx3m - Also shows a pause from the host (M76 in its pause script)
+  setStatusMessage(GET_TEXT_F(MSG_PRINT_PAUSED), 0);
   dgus.playSound(3);
   triggerFullUpdate();
 }
@@ -388,74 +402,50 @@ void DGUSScreenHandler::showPauseMessage(PauseMessage message, PauseMode mode) {
   PGM_P header = NUL_STR;
   bool waitForInput = false;
 
+  TERN_(ADVANCED_PAUSE_FEATURE, ExtUI::pauseModeStatus = message);  // tx3m
+
   if (mode != PAUSE_MODE_SAME) {
     pause_mode = mode;
   }
 
   switch (pause_mode) {
-  case PAUSE_MODE_CHANGE_FILAMENT:
-    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER);
-    break;
-  case PAUSE_MODE_LOAD_FILAMENT:
-    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_LOAD);
-    break;
-  case PAUSE_MODE_UNLOAD_FILAMENT:
-    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_UNLOAD);
-    break;
-  default:
-    header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_PAUSE);
-    break;
+    case PAUSE_MODE_CHANGE_FILAMENT: header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER); break;
+    case PAUSE_MODE_LOAD_FILAMENT: header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_LOAD); break;
+    case PAUSE_MODE_UNLOAD_FILAMENT: header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_UNLOAD); break;
+    default: header = GET_TEXT(MSG_FILAMENT_CHANGE_HEADER_PAUSE); break;
   }
 
   switch (message) {
-  case PAUSE_MESSAGE_PARKING:
-    msg = GET_TEXT(MSG_PAUSE_PRINT_PARKING);
-    break;
-  case PAUSE_MESSAGE_CHANGING:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_INIT);
-    break;
-  case PAUSE_MESSAGE_UNLOAD:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_UNLOAD);
-    break;
-  case PAUSE_MESSAGE_WAITING:
-    msg = GET_TEXT(MSG_ADVANCED_PAUSE_WAITING);
-    waitForInput = true;
-    break;
-  case PAUSE_MESSAGE_INSERT:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_INSERT);
-    waitForInput = true;
-    break;
-  case PAUSE_MESSAGE_LOAD:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_LOAD);
-    break;
-  case PAUSE_MESSAGE_PURGE:
-  #if ENABLED(ADVANCED_PAUSE_CONTINUOUS_PURGE)
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_CONT_PURGE);
-  #else
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_PURGE);
-  #endif
-    break;
-  case PAUSE_MESSAGE_RESUME:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_RESUME);
-    break;
-  case PAUSE_MESSAGE_HEAT:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_HEAT);
-    waitForInput = true;
-    break;
-  case PAUSE_MESSAGE_HEATING:
-    msg = GET_TEXT(MSG_FILAMENT_CHANGE_HEATING);
-    break;
-  case PAUSE_MESSAGE_OPTION:
-    pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT; // continue without asking user
-    break;
-  case PAUSE_MESSAGE_STATUS:
-    break;
-  default:
-    break;
+    case PAUSE_MESSAGE_PARKING: msg = GET_TEXT(MSG_PAUSE_PRINT_PARKING); break;
+    case PAUSE_MESSAGE_CHANGING: msg = GET_TEXT(MSG_FILAMENT_CHANGE_INIT); break;
+    case PAUSE_MESSAGE_UNLOAD: msg = GET_TEXT(MSG_FILAMENT_CHANGE_UNLOAD); break;   
+    case PAUSE_MESSAGE_WAITING:
+      // Parked print pause: wait on PRINT_STATUS, where the Resume button continues
+      if (isParkedForResume()) {
+        showPrintStatus();
+        return;
+      }
+      msg = GET_TEXT(MSG_ADVANCED_PAUSE_WAITING); waitForInput = true; break;
+    case PAUSE_MESSAGE_INSERT: msg = GET_TEXT(MSG_FILAMENT_CHANGE_INSERT); waitForInput = true; break;
+    case PAUSE_MESSAGE_LOAD: msg = GET_TEXT(MSG_FILAMENT_CHANGE_LOAD); break;
+    case PAUSE_MESSAGE_PURGE:
+      #if ENABLED(ADVANCED_PAUSE_CONTINUOUS_PURGE)
+        msg = GET_TEXT(MSG_FILAMENT_CHANGE_CONT_PURGE);
+      #else
+        msg = GET_TEXT(MSG_FILAMENT_CHANGE_PURGE);
+      #endif
+      break;
+    case PAUSE_MESSAGE_RESUME: msg = GET_TEXT(MSG_FILAMENT_CHANGE_RESUME); break;
+    case PAUSE_MESSAGE_HEAT: msg = GET_TEXT(MSG_FILAMENT_CHANGE_HEAT); waitForInput = true; break;
+    case PAUSE_MESSAGE_HEATING: msg = GET_TEXT(MSG_FILAMENT_CHANGE_HEATING); break;
+    case PAUSE_MESSAGE_OPTION: pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT; // continue without asking user
+      break;
+    case PAUSE_MESSAGE_STATUS: break;
+    default: break;
   }
 
   if (msg == NUL_STR) {
-    moveToScreen(DGUS_ScreenID::PRINT_STATUS, true); // ??
+    showPrintStatus();
     return;
   }
 
@@ -468,6 +458,35 @@ void DGUSScreenHandler::showPauseMessage(PauseMessage message, PauseMode mode) {
   setMessageLine_P(msg3, 3);
   setMessageLine_P(msg4, 4);
   showWaitScreen(DGUS_ScreenID::PRINT_STATUS, waitForInput);
+}
+
+// tx3m - Paused print parked by M125 and waiting for the user to resume
+bool DGUSScreenHandler::isParkedForResume() {
+  #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    return did_pause_print && pause_mode == PAUSE_MODE_PAUSE_PRINT && ExtUI::pauseModeStatus == PAUSE_MESSAGE_WAITING;
+  #else
+    return false;
+  #endif
+}
+
+// tx3m - Show "Print Aborted" and the elapsed time on PRINT_FINISHED
+void DGUSScreenHandler::printAborted() {
+  setStatusMessage(GET_TEXT_F(MSG_PRINT_ABORTED), 0);
+  print_aborted = true;
+  triggerScreenChange(DGUS_ScreenID::PRINT_FINISHED);
+}
+
+// tx3m - Status messages from Marlin. Keep "Print Aborted" until the user leaves PRINT_FINISHED.
+void DGUSScreenHandler::statusChanged(const char * const msg) {
+  if (print_aborted) return;
+  setStatusMessage(msg);
+}
+
+// tx3m - Switch to PRINT_STATUS right away, leaving the WAIT screen without confirming anything
+void DGUSScreenHandler::showPrintStatus() {
+  new_screenID = DGUS_ScreenID::BOOT; // Drop a pending switch to WAIT
+  wait_continue = false;
+  moveToScreen(DGUS_ScreenID::PRINT_STATUS, true);
 }
 
 void DGUSScreenHandler::setMessageLine(const char * const msg, const uint8_t line) {
@@ -603,6 +622,13 @@ void DGUSScreenHandler::moveToScreen(const DGUS_ScreenID screenID, bool abort_wa
   if (!callScreenSetup(screenID)) return;
 
   if (!sendScreenVPData(screenID, true)) return;
+
+  DEBUG_ECHOLNPGM("From screen ", (uint16_t)current_screenID, " to screen ", (uint16_t)screenID);  // tx3m
+
+  // tx3m - The aborted print is done with once the user leaves PRINT_FINISHED
+  if (print_aborted && screenID != DGUS_ScreenID::PRINT_FINISHED
+      && screenID != DGUS_ScreenID::PRINT_STATUS && screenID != DGUS_ScreenID::WAIT)
+    print_aborted = false;
 
   current_screenID = screenID;
   dgus.switchScreen(current_screenID);

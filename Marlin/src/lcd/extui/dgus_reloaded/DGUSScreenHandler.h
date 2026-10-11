@@ -72,6 +72,9 @@ public:
   #endif
 
   static void showPauseMessage(PauseMessage message, PauseMode mode);  // tx3m
+  static bool isParkedForResume();  // tx3m
+  static void printAborted();       // tx3m
+  static void statusChanged(const char * const msg);  // tx3m
   static void setMessageLine(const char * const msg, const uint8_t line);
   static void setMessageLine_P(PGM_P const msg, const uint8_t line);
   static void setMessageLine(FSTR_P const msg, const uint8_t line) { setMessageLine_P(FTOP(msg), line); }
@@ -126,6 +129,7 @@ private:
   static bool callScreenSetup(const DGUS_ScreenID screenID);
 
   static void moveToScreen(const DGUS_ScreenID screenID, bool abort_wait=false);
+  static void showPrintStatus();  // tx3m
   static bool sendScreenVPData(const DGUS_ScreenID screenID, bool complete_update);
 
   static bool settings_ready;
@@ -136,6 +140,8 @@ private:
   static bool full_update;
 
   static DGUS_ScreenID wait_return_screenID;
+
+  static bool print_aborted;  // tx3m
 
   static millis_t status_expire;
   static millis_t eeprom_save;

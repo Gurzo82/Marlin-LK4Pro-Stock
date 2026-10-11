@@ -96,12 +96,17 @@ namespace ExtUI {
       const PauseMode mode/*=PAUSE_MODE_SAME*/,
       const uint8_t extruder/*=motion.extruder*/
     ) {
-      stdOnPauseMode(message, mode, extruder);
+      // stdOnPauseMode(message, mode, extruder);
+      // tx3m
+      UNUSED(extruder);
+      // Use DGUS-specific wait/continue behavior (per-message waitForInput) instead of
+      // stdOnPauseMode(), which always used userConfirmRequired() / wait_continue.
+      screen.showPauseMessage(message, mode);
     }
   #endif
 
   void onStatusChanged(const char * const msg) {
-    screen.setStatusMessage(msg);
+    screen.statusChanged(msg);  // tx3m
   }
 
   void onHomingStart() {}
