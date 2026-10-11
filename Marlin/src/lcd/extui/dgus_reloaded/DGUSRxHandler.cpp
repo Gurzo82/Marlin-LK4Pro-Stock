@@ -172,6 +172,38 @@ void DGUSRxHandler::screenChange(DGUS_VP &vp, void *data_ptr) {
   }
 #endif // HAS_MEDIA
 
+// tx3m - Stop the print, also when it is paused and parked by M125
+static void abortPrint() {
+  #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    if (did_pause_print) {
+      // Only while M125 waits for the user to resume, not while parking, reheating or resuming
+      if (!screen.isParkedForResume() || !marlin.wait_for_user) {
+        screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_BUSY));
+        return;
+      }
+      // ui.abort_print() only closes a paused SD file. Flag a full SD abort (heaters off,
+      // power-loss data purged, EVENT_GCODE_SD_ABORT) to run as soon as M125 returns...
+      TERN_(HAS_MEDIA, card.abortFilePrintSoon());
+      // ...and clear the pause so resume_print() doesn't move back and restart the closed file.
+      did_pause_print = 0;
+
+      // Paused from the LCD ("M25 P\nM24" injected, see ui.pause_print()): M125 isn't in the ring buffer,
+      // so drop the pending M24 and the commands queued before the pause. Otherwise a host print would
+      // move back to its next print position. Still acknowledge host commands so the host doesn't stall.
+      if (queue.injected_commands_P) {
+        queue.injected_commands_P = nullptr;
+        while (queue.ring_buffer.occupied()) {
+          queue.ok_to_send();
+          queue.ring_buffer.advance_r();
+        }
+      }
+    }
+  #endif
+
+  screen.printAborted();
+  ExtUI::stopPrint(); // Also ends the M125 wait for the user
+}
+
 void DGUSRxHandler::printAbort(DGUS_VP &vp, void *data_ptr) {
   UNUSED(vp);
 
@@ -192,7 +224,7 @@ void DGUSRxHandler::printAbort(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
-  ExtUI::stopPrint();
+  abortPrint();  // tx3m
 }
 
 void DGUSRxHandler::printPause(DGUS_VP &vp, void *data_ptr) {
@@ -210,7 +242,8 @@ void DGUSRxHandler::printPause(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
-  if (!ExtUI::isPrinting()) {
+  // tx3m - Pausing again would queue another park after the resume
+  if (!ExtUI::isPrinting() || ExtUI::isPrintingPaused()) {
     screen.triggerFullUpdate();
     return;
   }
@@ -235,6 +268,12 @@ void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
 
   if (!ExtUI::isPrintingPaused()) {
     screen.triggerFullUpdate();
+    return;
+  }
+
+  // tx3m - Parked by M125: let it continue, which moves back and resumes the print
+  if (screen.isParkedForResume() && marlin.wait_for_user) {
+    ExtUI::setUserConfirmed();
     return;
   }
 
