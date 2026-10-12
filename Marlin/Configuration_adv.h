@@ -1805,7 +1805,7 @@
    * Reinit the LCD after SD Card insert/remove or when entering the menu.
    * Required for some LCDs that use shared SPI with an external SD Card reader.
    */
-  //#define REINIT_NOISY_LCD  // tx3m - Only used by MarlinUI LCDs, not DGUS
+  //#define REINIT_NOISY_LCD  // tx3m - Not needed for the serial DGUS screen. When enabled, it re-inits the screen (back to BOOT) on SD insert/remove
 
   // The standard SD detect circuit reads LOW when media is inserted and HIGH when empty.
   // Enable this option and set to HIGH if your SD cards are incorrectly detected.
