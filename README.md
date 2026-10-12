@@ -1,221 +1,171 @@
-<p align="center"><img src="buildroot/share/pixmaps/logo/marlin-outrun-nf-500.png" height="250" alt="MarlinFirmware's logo" /></p>
+<p align="center"><img src="buildroot/share/pixmaps/logo/marlin-outrun-nf-500.png" height="200" alt="Marlin logo" /></p>
 
-<h1 align="center">Marlin 3D Printer Firmware</h1>
-
-<p align="center">
-    <a href="/LICENSE"><img alt="GPL-V3.0 License" src="https://img.shields.io/github/license/marlinfirmware/marlin.svg"></a>
-    <a href="//github.com/MarlinFirmware/Marlin/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/marlinfirmware/marlin.svg"></a>
-    <a href="//github.com/MarlinFirmware/Marlin/releases"><img alt="Last Release Date" src="https://img.shields.io/github/release-date/MarlinFirmware/Marlin"></a>
-    <a href="//github.com/MarlinFirmware/Marlin/actions/workflows/ci-build-tests.yml"><img alt="CI Status" src="https://github.com/MarlinFirmware/Marlin/actions/workflows/ci-build-tests.yml/badge.svg"></a>
-    <a href="//github.com/sponsors/thinkyhead"><img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/thinkyhead?color=db61a2"></a>
-    <br />
-    <a href="//bsky.app/profile/marlinfw.org"><img alt="Follow marlinfw.org on Bluesky" src="https://img.shields.io/badge/Follow%20@marlinfw.org-0085ff?logo=bluesky&logoColor=white"></a>
-    <a href="//fosstodon.org/@marlinfirmware"><img alt="Follow MarlinFirmware on Mastodon" src="https://img.shields.io/mastodon/follow/109450200866020466?domain=https%3A%2F%2Ffosstodon.org&logoColor=%2300B&style=social"></a>
-</p>
-
-### 🌍 Translations
-
-<table>
-<tr>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=an">Aragonés</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=bg">Български</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=ca">Català</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=cs">Čeština</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=da">Dansk</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=de">Deutsch</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=el">Ελληνικά</a></td>
-</tr>
-<tr>
-  <td><a href="//github.com/MarlinFirmware/Marlin">English</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=es">Español</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=eu">Euskara</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=fi">Suomi</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=fr">Français</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=gl">Galego</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=hr">Hrvatski</a></td>
-</tr>
-<tr>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=hu">Magyar</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=it">Italiano</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=ja">にほんご</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=ko">한국어</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=nl">Nederlands</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=pl">Polski</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=pt">Português</a></td>
-</tr>
-<tr>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=pt-BR">Português (Brasil)</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=ro">Română</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=ru">Русский</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=sk">Slovenčina</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=sv">Svenska</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=tr">Türkçe</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=uk">Українська</a></td>
-</tr>
-<tr>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=vi">Tiếng Việt</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=zh-CN">简体中文</a></td>
-  <td><a href="//translate.google.com/translate?u=github.com/MarlinFirmware/Marlin&sl=auto&tl=zh-TW">繁體中文</a></td>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td></td>
-</tr>
-</table>
-
-Official documentation can be found at the [Marlin Home Page](//marlinfw.org/).
-
-Please test this firmware and let us know if it misbehaves in any way. Volunteers are standing by!
-
----
-
-## Marlin 2.1.3 Beta 3
-
-**Not for production use. Use with caution!**
-
-This branch is for testing and bug fixes for Marlin 2.1.3. We'll use this time to collect bug reports and patch as many issues as we can. This should help the release version of 2.1.3 to be as robust as we can make it. Are you ready to do some testing?
-
-## Configuration Migration
-
-There are a lot of configuration changes in Marlin 2.1.3. We're working on automated tools to migrate configurations, so if you want to help us test those get in touch on the [Marlin Discord](//discord.com/servers/marlin-firmware-461605380783472640). If you need help migrating your configurations to Marlin 2.1.3, we'll have a dedicated channel for this purpose. Post your configurations there and we'll send back updated configurations. We can also send a built `firmware.bin` file if you need it.
-
-## Example Configurations
-
-Before you can build Marlin for your machine you'll need a configuration for your specific hardware. Upon request, your vendor will be happy to provide you with the complete source code and configurations for your machine, but you'll need to get updated configuration files if you want to install a newer version of Marlin. Fortunately, Marlin users have contributed dozens of tested configurations to get you started. Visit the [MarlinFirmware/Configurations](//github.com/MarlinFirmware/Configurations) repository to find the right configuration for your hardware.
-
-## Marlin Builds
-
-We now publish builds for all our posted example configurations. See the [MarlinBuilds](//github.com/MarlinFirmware/MarlinBuilds) repository for details. This is a new process so bear with us while we work out all the best variants. If you like the way an example configuration works but think it could be better, please submit your suggested improvements in a **Pull Request**.
-
-## Building Marlin 2.1
-
-To build and upload Marlin you will use one of these tools:
-
-- The free [Visual Studio Code](//code.visualstudio.com/download) using the [Auto Build Marlin](//marlinfw.org/docs/basics/auto_build_marlin.html) extension.
-- Marlin is optimized to build with the [PlatformIO IDE](//platformio.org/) extension for Visual Studio Code.
-- You can also use VSCode with devcontainer : See [Installing Marlin (VSCode devcontainer)](https://marlinfw.org/docs/basics/install_devcontainer_vscode.html).
-- You can still build Marlin with [Arduino IDE](//www.arduino.cc/en/main/software) : See [Building Marlin with Arduino](//marlinfw.org/docs/basics/install_arduino.html). We hope to improve the Arduino build experience, but at this time, PlatformIO is the preferred choice.
-
-## 32-bit ARM boards
-
-Marlin is compatible with a plethora of 32-bit ARM boards, which offer ample computational power and memory and allows Marlin to deliver state-of-the-art performance and features we like to see in modern 3d printers. Some of the newer features in Marlin will require use of a 32-bit ARM board.
-
-## 8-Bit AVR Boards
-
-Marlin originates from the era of Arduino based 8-bit boards, and we aim to support 8-bit AVR boards in perpetuity. Both 32-bit and 8-bit boards are covered by a single code base that can apply to all machines. Our goal is to support casual hobbyists, tinkerers, and owners of older machines and boards, striving to allow them to benefit from the community's innovations just as much as those with fancier machines and newer boards. In addition, these venerable AVR-based machines are often the best for testing and feedback!
-
-## Hardware Abstraction Layer (HAL)
-
-Marlin's Hardware Abstraction Layer provides a common API for all the platforms it targets. This allows Marlin code to address the details of motion and user interface tasks at the lowest and highest levels with no system overhead, tying all events directly to the hardware clock.
-
-Every new HAL opens up a world of hardware. Marlin currently has HALs for more than a dozen platforms. While AVR and STM32 are the most well known and popular ones, others like ESP32 and LPC1768 support a variety of less common boards. At this time, an HAL for RP2040 is available in beta; we would like to add one for the Duet3D family of boards. A HAL that wraps an RTOS is an interesting concept that could be explored.
-
-Did you know that Marlin includes a Simulator that can run on Windows, macOS, and Linux? Join the Discord to help move these sub-projects forward!
-
-### Supported Platforms
-
-| Platform | MCU | Example Boards |
-| --- | --- | --- |
-| [Arduino AVR](//www.arduino.cc/) | ATmega | RAMPS, Melzi, RAMBo |
-| [Teensy++ 2.0](//www.microchip.com/en-us/product/AT90USB1286) | AT90USB1286 | Printrboard |
-| [Arduino Due](//www.arduino.cc/en/Guide/ArduinoDue) | SAM3X8E | RAMPS-FD, RADDS, RAMPS4DUE |
-| [ESP32](//github.com/espressif/arduino-esp32) | ESP32 | FYSETC E4, E4d@BOX, MRR |
-| [GD32](//www.gigadevice.com/) | GD32 ARM Cortex-M4 | Creality MFL GD32 V4.2.2 |
-| [HC32](//www.huazhoucn.com/) | HC32 | Ender-2 Pro, Voxelab Aquila |
-| [LPC1768](//www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc1700-cortex-m3/512-kb-flash-64-kb-sram-ethernet-usb-lqfp100-package:LPC1768FBD100) | ARM® Cortex-M3 | MKS SBASE, Re-ARM, Selena Compact |
-| [LPC1769](//www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc1700-cortex-m3/512-kb-flash-64-kb-sram-ethernet-usb-lqfp100-package:LPC1769FBD100) | ARM® Cortex-M3 | Smoothieboard, Azteeg X5 mini, TH3D EZBoard |
-| [Pico RP2040](//www.raspberrypi.com/documentation/microcontrollers/pico-series.html) | Dual Cortex M0+ | BigTreeTech SKR Pico |
-| [STM32F103](//www.st.com/en/microcontrollers-microprocessors/stm32f103.html) | ARM® Cortex-M3 | Malyan M200, GTM32 Pro, MKS Robin, BTT SKR Mini |
-| [STM32F401](//www.st.com/en/microcontrollers-microprocessors/stm32f401.html) | ARM® Cortex-M4 | ARMED, Rumba32, SKR Pro, Lerdge, FYSETC S6, Artillery Ruby |
-| [STM32F7x6](//www.st.com/en/microcontrollers-microprocessors/stm32f7x6.html) | ARM® Cortex-M7 | The Borg, RemRam V1 |
-| [STM32G0B1RET6](//www.st.com/en/microcontrollers-microprocessors/stm32g0x1.html) | ARM® Cortex-M0+ | BigTreeTech SKR mini E3 V3.0 |
-| [STM32H743xIT6](//www.st.com/en/microcontrollers-microprocessors/stm32h743-753.html) | ARM® Cortex-M7 | BigTreeTech SKR V3.0, SKR EZ V3.0, SKR SE BX V2.0/V3.0 |
-| [SAMD21P20A](//www.adafruit.com/product/4064) | ARM® Cortex-M0+ | Adafruit Grand Central M4 |
-| [SAMD51P20A](//www.adafruit.com/product/4064) | ARM® Cortex-M4 | Adafruit Grand Central M4 |
-| [Teensy 3.2/3.1](//www.pjrc.com/teensy/teensy31.html) | MK20DX256VLH7 ARM® Cortex-M4 |
-| [Teensy 3.5](//www.pjrc.com/store/teensy35.html) | MK64FX512-VMD12 ARM® Cortex-M4 |
-| [Teensy 3.6](//www.pjrc.com/store/teensy36.html) | MK66FX1MB-VMD18 ARM® Cortex-M4 |
-| [Teensy 4.0](//www.pjrc.com/store/teensy40.html) | MIMXRT1062-DVL6B ARM® Cortex-M7 |
-| [Teensy 4.1](//www.pjrc.com/store/teensy41.html) | MIMXRT1062-DVJ6B ARM® Cortex-M7 |
-| Linux Native | x86 / ARM / RISC-V | Raspberry Pi GPIO |
-| Simulator | Windows, macOS, Linux | Desktop OS |
-| [All supported boards](//marlinfw.org/docs/hardware/boards.html#boards-list) | All platforms | All boards |
-
-## Marlin Discord
-
-The [Marlin Firmware Discord](//discord.gg/marlin-firmware-461605380783472640) is a great place to discuss issues with Marlin users and developers, get interactive help with troubleshooting, and build on your best ideas to improve to Marlin in tandem with the most active members of the development team.
+<h1 align="center">Marlin for the Longer LK4 Pro (DWIN touch screen)</h1>
 
 <p align="center">
-  <a target="_blank" href="https://discord.gg/marlin-firmware-461605380783472640">
-    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/marlin-firmware-461605380783472640">
-  </a>
+  <a href="/LICENSE"><img alt="GPL-V3.0 License" src="https://img.shields.io/github/license/marlinfirmware/marlin.svg"></a>
 </p>
 
-## Other Marlin Support
+This is [Marlin](https://github.com/MarlinFirmware/Marlin) for the **Longer LK4 Pro** with its original LGT
+mainboard and DWIN touch screen. Longer's stock firmware is based on a much older Marlin. This one tracks Marlin's
+current `bugfix-2.1.x` development branch, and comes with a redesigned touch screen firmware driven by Marlin's
+DGUS Reloaded screen driver.
 
-The Issue Queue is reserved for Bug Reports and Feature Requests. Please use the following resources for help with configuration and troubleshooting:
+It builds on years of community work: Guizz27's original LK4/LK5 Pro port and screen design, jgbrown54's update to
+Marlin 2.1.2.1 and screen redesign, and this fork's port to current Marlin (see [Credits](#credits)).
 
-- [Marlin Documentation](//marlinfw.org) - Official Marlin documentation
-- ["Marlin Firmware"](//www.facebook.com/groups/1049718498464482/) Facebook Group
-- [Marlin Forum](//forums.reprap.org/list.php?415) at RepRap.org
-- ["Marlin Firmware for 3D Printers"](//www.facebook.com/groups/3Dtechtalk/) Facebook Group
-- [Marlin Configuration](//www.youtube.com/results?search_query=marlin+configuration) playlist on YouTube
+> **Use at your own risk.** Flashing firmware can leave a printer unusable until it is flashed again.
+> The configuration contains values for the author's own printer (see [Configuration](#configuration)), so check them
+> before printing.
 
-## Contributing Patches
+Current version: **V25** (`LKPro_FW_VERSION` in `Marlin/Configuration.h`).
 
-Contribute your patches to Marlin by submitting a Pull Request to the ([bugfix-2.1.x](//github.com/MarlinFirmware/Marlin/tree/bugfix-2.1.x)) branch.
+## Branches
 
-- We use the `bugfix-2.1.x` branch to fix bugs and integrate new features into the latest firmware. Use with caution!
-- We maintain `lts-x.x.x` branches, mainly for vendors, so that older versions of Marlin can be patched as-needed to stay functional and fix bugs.
-- Follow the [Coding Standards](//marlinfw.org/docs/development/coding_standards.html) to gain points with the maintainers.
-- Please submit Feature Requests and Bug Reports to the [Issue Queue](//github.com/MarlinFirmware/Marlin/issues/new/choose). See above for user support.
-- Whenever you add new features, be sure to add one or more build tests to `buildroot/tests`. Any tests added to a PR will be run within that PR on GitHub servers as soon as they are pushed. To minimize iteration be sure to run your new tests locally, if possible.
-  - Local build tests:
-    - All: `make tests-config-all-local`
-    - Single: `make tests-config-single-local TEST_TARGET=...`
-  - Local build tests in Docker:
-    - All: `make tests-config-all-local-docker`
-    - Single: `make tests-config-all-local-docker TEST_TARGET=...`
-  - To run all unit test suites:
-    - Using PIO: `platformio run -t test-marlin`
-    - Using Make: `make unit-test-all-local`
-    - Using Docker + make: `make unit-test-all-local-docker`
-  - To run a single unit test suite:
-    - Using PIO: `platformio run -t marlin_<test-suite-name>`
-    - Using make: `make unit-test-single-local TEST_TARGET=<test-suite-name>`
-    - Using Docker + make: `make unit-test-single-local-docker TEST_TARGET=<test-suite-name>`
-- If your feature can be unit tested, add one or more unit tests. For more information see our documentation on [Unit Tests](test).
+| Branch | Contents |
+| --- | --- |
+| `lk4pro` | The LK4 Pro firmware (default branch). |
+| `bugfix-2.1.x` | Unmodified copy of official Marlin, used to bring in upstream updates. |
 
-## Contributors
+## Requirements
 
-Marlin is constantly improving thanks to a huge number of contributors from all over the world bringing their specialties and talents. Huge thanks are due to [all the contributors](//github.com/MarlinFirmware/Marlin/graphs/contributors) who regularly patch up bugs, help direct traffic, and basically keep Marlin from falling apart. Marlin's continued existence would not be possible without them.
+- Longer LK4 Pro with the LGT mainboard. An LK5 Pro option exists in `Configuration.h` but is untested.
+- The DWIN touch screen with the **matching screen firmware**: _link will be added once published_.
+  The screen and printer firmware must be updated together.
+- Screens labelled "TL5", "DWJT" or "DWJTB" in their About screen can't be updated with this screen firmware.
+- Optional: BLTouch (`LKPro_BLTOUCH`) for automatic bed leveling.
 
-Marlin Firmware original logo design by Ahmet Cem TURAN [@ahmetcemturan](//github.com/ahmetcemturan).
+## Compared with the stock firmware
 
-## Project Leadership
+**Newer Marlin features enabled in this configuration:**
 
-| Name | Role | Link | Donate |
-| --- | --- | --- | --- |
-| 🇺🇸 Scott Lahteine | Project Lead | [[@thinkyhead](//github.com/thinkyhead)] | [❤️ Donate](//marlinfw.org/docs/development/contributing.html#donate) |
-| 🇳🇿 Peter Ellens | Admin | [[@ellensp](//github.com/ellensp)] | [❤️ Donate](//ko-fi.com/ellensp) |
-| 🇬🇧 Chris Pepper | Admin | [[@p3p](//github.com/p3p)] |
-| 🇺🇸 Keith Bennett | Admin | [[@thisiskeithb](//github.com/thisiskeithb)] | [❤️ Donate](//github.com/sponsors/thisiskeithb) |
-| 🇺🇸 Roxanne Neufeld | Admin | [[@Roxy-3D](//github.com/Roxy-3D)] |
-| 🇺🇸 Jason Smith | Admin | [[@sjasonsmith](//github.com/sjasonsmith)] |
-| 🇧🇷 Victor Oliveira | Admin | [[@rhapsodyv](//github.com/rhapsodyv)] |
-| 🇺🇸 Bob Kuhn | Admin | [[@Bob-the-Kuhn](//github.com/Bob-the-Kuhn)] |
-| 🇳🇱 Erik van der Zalm | Founder | [[@ErikZalm](//github.com/ErikZalm)] |
+- Linear Advance (pressure advance), adjustable from the screen.
+- Bilinear auto bed leveling with BLTouch, Z safe homing, and Z offset babystepping while printing.
+- Park on pause with host prompts (OctoPrint), filament runout sensor, power-loss recovery.
+- Arc moves (`G2`/`G3`), bed PID, print statistics, automatic temperature reports to the host.
+- Input shaping is supported by this Marlin version, but not enabled in this configuration.
 
-## Star History
+**Touch screen firmware:** a full redesign of Longer's original screens, started by Guizz27 and extended by
+jgbrown54 and in this fork. See the screen firmware repository for screenshots.
 
-<a id="starchart" href="//star-history.com/#MarlinFirmware/Marlin&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=MarlinFirmware/Marlin&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=MarlinFirmware/Marlin&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=MarlinFirmware/Marlin&type=Date" />
-  </picture>
-</a>
+## Touch screen features
+
+- Print from SD card with progress, elapsed time, Z height, speed and fan display.
+- **Pause / Resume / Abort** that work with Marlin's park-on-pause:
+  - Pause parks the nozzle (back left) and shows the **Resume** button.
+  - Abort while paused stops the print properly: heaters off, no power-loss prompt afterwards, and the screen shows
+    "Print Aborted" with the elapsed time.
+  - A pause from OctoPrint is shown on the screen (needs the scripts below).
+- Auto bed leveling with the measured values shown on the grid (5×5 with BLTouch, otherwise 3×3), Z offset
+  (0.1 / 0.01 mm) and babystepping while printing.
+- Advanced settings: steps/mm, jerk, junction deviation, linear advance, accelerations and maximum speeds.
+- EEPROM save / restore / factory reset, filament runout sensor on/off, PID tuning, filament load/unload,
+  power-loss recovery, screen brightness and volume.
+
+## Building
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/) with the
+   [PlatformIO](https://platformio.org/) extension.
+2. Clone this repository and open it in VS Code:
+   ```
+   git clone https://github.com/tx3m/Marlin-LK4Pro.git
+   ```
+3. Check the settings in `Marlin/Configuration.h` (see below).
+4. Build the `mega2560` environment, either with the PlatformIO **Build** button or:
+   ```
+   pio run -e mega2560
+   ```
+   The firmware is written to `.pio/build/mega2560/firmware.hex`.
+
+## Flashing
+
+- **Printer:** flash `firmware.hex` over USB, for example with PlatformIO's **Upload** or OctoPrint's Firmware Updater
+  plugin. Do a factory reset from the screen afterwards (Settings → EEPROM), as new versions can change the stored
+  settings.
+- **Screen:** copy the `DWIN_SET` folder of the matching screen firmware to the root of a FAT32 SD card
+  (32 GB or smaller, 4096-byte allocation unit), insert it into the screen's own card slot and power on. Full
+  instructions come with the screen firmware.
+
+## Configuration
+
+The options at the top of `Marlin/Configuration.h` select the printer:
+
+| Option | Meaning |
+| --- | --- |
+| `LGT_MAC` | LK4/LK5 Pro family with the LGT mainboard. Keep enabled. |
+| `LK4_Pro` / `LK5_Pro` | Printer model. `LK4_Pro` is the default. |
+| `LKPro_BLTOUCH` | Enable if a BLTouch is fitted. |
+| `LKPro_FW_VERSION` | Version text shown on the screen. |
+
+Values tuned for the author's printer that you should check on yours:
+
+- `DEFAULT_AXIS_STEPS_PER_UNIT` is `{ 79.5, 80, 405, 145 }` (stock LK4 Pro: `{ 80, 80, 400, 96 }`).
+- `BAUDRATE` is `250000`, so set your host (e.g. OctoPrint) to 250000 baud.
+
+`Marlin/Config-export.h` lists all active settings in one short file, which is handy for comparing configurations.
+
+## OctoPrint
+
+When a print is streamed from OctoPrint, pausing in OctoPrint only runs OctoPrint's own scripts. These scripts park
+the nozzle like the screen does, and tell the printer about the pause so the screen shows it. They assume the slicer
+uses relative extrusion (`M83`).
+
+Add them under **OctoPrint Settings → GCODE Scripts**:
+
+**After print job is paused**
+```
+{% if pause_position.x is not none %}
+G91                 ; relative moves
+G1 E-5 F2400        ; retract
+G90                 ; absolute XYZ (this also sets E to absolute)
+M83                 ; E back to relative, like the slicer
+G27                 ; park like the screen: back left, Z at least 20 mm
+M76                 ; pause the print timer: the screen shows "Print Paused" and Resume
+{% endif %}
+```
+
+**Before print job is resumed**
+```
+{% if pause_position.x is not none %}
+G90                 ; absolute XYZ
+M83                 ; relative E, like the slicer
+G1 E10 F300         ; at the park position: undo the retract and purge 5 mm
+G1 E-1 F2400        ; small retract for the move back
+G1 X{{ pause_position.x }} Y{{ pause_position.y }} F6000
+G1 Z{{ pause_position.z }} F600
+G1 E1 F2400         ; undo the small retract
+{% if pause_position.f is not none %}G1 F{{ pause_position.f }}{% endif %}
+M75                 ; resume the print timer
+{% endif %}
+```
+
+**After print job is cancelled**
+```
+G91                 ; relative moves
+G1 E-2 F2400        ; retract while the nozzle is still hot
+G1 Z10 F600         ; lift 10 mm
+G90                 ; absolute XYZ
+M84                 ; disable motors
+{% snippet 'disable_hotends' %}
+{% snippet 'disable_bed' %}
+M106 S0             ; fan off
+```
+
+## Credits
+
+| Who | Contribution |
+| --- | --- |
+| [MarlinFirmware](https://github.com/MarlinFirmware/Marlin) | Marlin, including the DGUS Reloaded screen driver. |
+| [Guizz27](https://github.com/Guizz27) | The original LK4/LK5 Pro port of Marlin 2 ([Marlin---Longer-LKx-Pro](https://github.com/Guizz27/Marlin---Longer-LKx-Pro)) and the screen firmware design ([DWIN_LK4Pro](https://github.com/Guizz27/DWIN_LK4Pro)), replacing Longer's original screens. Includes the advanced settings, EEPROM, runout control, PID and G-code entry screens. |
+| [jgbrown54](https://github.com/jgbrown54) | Update to Marlin 2.1.2.1 ("JGB2.2B"). Reworked the screen firmware to match Marlin's DGUS Reloaded layout: separate Pause / Resume / Abort buttons, new bed leveling grid, redesigned home, print status, move, filament, advanced settings and runout screens, a new G-code keyboard ([DWIN_LK4Pro #22](https://github.com/Guizz27/DWIN_LK4Pro/issues/22)), status messages on more screens, and EEPROM save / restore messages. |
+| [tx3m](https://github.com/tx3m) | Port to current Marlin `bugfix-2.1.x`: screen address fixes, pause / resume / abort rework, OctoPrint pause integration, bed leveling view and Z offset fixes. |
+
+## Bugs and questions
+
+Please use this repository's [Issues](https://github.com/tx3m/Marlin-LK4Pro/issues) for problems with this firmware,
+not Marlin's issue tracker. Fixes that apply to all printers are sent to official Marlin as separate pull requests.
 
 ## License
 
-Marlin is published under the [GPL license](/LICENSE) because we believe in open development. The GPL comes with both rights and obligations. Whether you use Marlin firmware as the driver for your open or closed-source product, you must keep Marlin open, and you must provide your compatible Marlin source code to end users upon request. The most straightforward way to comply with the Marlin license is to make a fork of Marlin on GitHub, perform your modifications, and direct users to your modified fork.
+Marlin is published under the [GPL v3 license](/LICENSE), and so is this fork. You may use, modify and share it, but
+any firmware you distribute must come with its source code. Pointing people to this repository satisfies that.
