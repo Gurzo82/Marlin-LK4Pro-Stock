@@ -18,7 +18,7 @@ Marlin 2.1.2.1 and screen redesign, and this fork's port to current Marlin (see 
 > The configuration contains values for the author's own printer (see [Configuration](#configuration)), so check them
 > before printing.
 
-Current version: **V25** (`LKPro_FW_VERSION` in `Marlin/Configuration.h`).
+The firmware version (`V<N>`) is set automatically from git when building (see [Building](#building)).
 
 ## Branches
 
@@ -30,7 +30,9 @@ Current version: **V25** (`LKPro_FW_VERSION` in `Marlin/Configuration.h`).
 ## Requirements
 
 - Longer LK4 Pro with the LGT mainboard. An LK5 Pro option exists in `Configuration.h` but is untested.
-- The DWIN touch screen with the **matching screen firmware**: _link will be added once published_.
+- Pick the firmware file that matches your extruder driver: `LK4Pro` for the stock driver, `LK4Pro-SilentE` if you
+  replaced it with a silent TMC2208.
+- The DWIN touch screen with the **matching screen firmware**: [tx3m/DWIN_LK4Pro](https://github.com/tx3m/DWIN_LK4Pro).
   The screen and printer firmware must be updated together.
 - Screens labelled "TL5", "DWJT" or "DWJTB" in their About screen can't be updated with this screen firmware.
 - Optional: BLTouch (`LKPro_BLTOUCH`) for automatic bed leveling.
@@ -71,11 +73,19 @@ jgbrown54 and in this fork. See the screen firmware repository for screenshots.
    git clone https://github.com/tx3m/Marlin-LK4Pro.git
    ```
 3. Check the settings in `Marlin/Configuration.h` (see below).
-4. Build the `mega2560` environment, either with the PlatformIO **Build** button or:
-   ```
-   pio run -e mega2560
-   ```
-   The firmware is written to `.pio/build/mega2560/firmware.hex`.
+4. Build with the PlatformIO **Build** button or `pio run`. This builds two firmware files:
+
+   | Environment | Extruder driver | File, e.g. |
+   | --- | --- | --- |
+   | `LK4Pro` | Stock A4988 | `.pio/build/LK4Pro/bugfix-2.1.x_V29_LK4Pro.hex` |
+   | `LK4Pro_SilentE` | Replaced with a silent TMC2208 | `.pio/build/LK4Pro_SilentE/bugfix-2.1.x_V29_LK4Pro-SilentE.hex` |
+
+   Use `pio run -e LK4Pro` or `pio run -e LK4Pro_SilentE` to build only one.
+
+The version number comes from git: the newest `v<N>` tag plus the number of commits on this branch since then.
+Merging official Marlin counts as one commit. A build with uncommitted changes gets `-dev` added (e.g. `V29-dev`).
+Without git, for example from a downloaded ZIP, the `LKPro_FW_VERSION` fallback in `Configuration.h` is used.
+The setup is in `ini/lk4pro.ini` and `buildroot/share/PlatformIO/scripts/lk4pro_version.py`.
 
 ## Flashing
 
@@ -95,6 +105,7 @@ The options at the top of `Marlin/Configuration.h` select the printer:
 | `LGT_MAC` | LK4/LK5 Pro family with the LGT mainboard. Keep enabled. |
 | `LK4_Pro` / `LK5_Pro` | Printer model. `LK4_Pro` is the default. |
 | `LKPro_BLTOUCH` | Enable if a BLTouch is fitted. |
+| `LKPro_SILENT_E_DRIVER` | Enable if the extruder's A4988 driver was replaced with a silent TMC2208 (set automatically by `LK4Pro_SilentE`). If the extruder then runs backwards, set `INVERT_E0_DIR` to `false` or turn the motor plug around. |
 | `LKPro_FW_VERSION` | Version text shown on the screen. |
 
 Values tuned for the author's printer that you should check on yours:
