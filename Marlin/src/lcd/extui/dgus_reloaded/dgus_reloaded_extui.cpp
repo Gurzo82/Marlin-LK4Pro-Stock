@@ -54,10 +54,6 @@ namespace ExtUI {
   void onMediaError()    { TERN_(HAS_MEDIA, screen.sdCardError()); }
   void onMediaRemoved()  { TERN_(HAS_MEDIA, screen.sdCardRemoved()); }
 
-  void onHeatingError(const heater_id_t header_id) {}
-  void onMinTempError(const heater_id_t header_id) {}
-  void onMaxTempError(const heater_id_t header_id) {}
-
   void onPlayTone(const uint16_t frequency, const uint16_t duration/*=0*/) {
     screen.playTone(frequency, duration);
   }
@@ -109,11 +105,6 @@ namespace ExtUI {
     screen.statusChanged(msg);  // tx3m
   }
 
-  void onHomingStart() {}
-  void onHomingDone() {}
-
-  void onPrintDone() {}
-
   void onFactoryReset() {
     screen.settingsReset();
   }
@@ -126,8 +117,6 @@ namespace ExtUI {
     screen.loadSettings(buff);
   }
 
-  void onPostprocessSettings() {}
-
   void onSettingsStored(const bool success) {
     screen.configurationStoreWritten(success);
   }
@@ -136,37 +125,18 @@ namespace ExtUI {
     screen.configurationStoreRead(success);
   }
 
-  #if HAS_LEVELING
-    void onLevelingStart() {}
-    void onLevelingDone() {}
-    #if ENABLED(PREHEAT_BEFORE_LEVELING)
-      celsius_t getLevelingBedTemp() { return LEVELING_BED_TEMP; }
-    #endif
-  #endif
-
   #if HAS_MESH
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const float zval) {
       screen.meshUpdate(xpos, ypos, zval);  // tx3m use the zval version so that the grid can be updated
     }
   #endif
 
+  // Called by UBL only. Mark the point as probed; the value comes with the zval version above.
   void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
-    if (state == G29_POINT_FINISH){
-      screen.meshUpdate(xpos, ypos, 0.123);
-    }
+    if (state == G29_POINT_FINISH) screen.meshUpdate(xpos, ypos);
   }
 
-  #if ENABLED(PREVENT_COLD_EXTRUSION)
-    void onSetMinExtrusionTemp(const celsius_t) {}
-  #endif
-
   #if ENABLED(POWER_LOSS_RECOVERY)
-    void onSetPowerLoss(const bool onoff) {
-      // Called when power-loss is enabled/disabled
-    }
-    void onPowerLoss() {
-      // Called when power-loss state is detected
-    }
     void onPowerLossResume() {
       // Called on resume from power-loss
       screen.powerLossResume();
@@ -178,25 +148,7 @@ namespace ExtUI {
       // Called for temperature PID tuning result
       screen.pidTuning(rst);
     }
-    void onStartM303(const int count, const heater_id_t hid, const celsius_t temp) {
-      // Called by M303 to update the UI
-    }
   #endif
-
-  #if ENABLED(MPC_AUTOTUNE)
-    void onMPCTuning(const mpcresult_t rst) {
-      // Called for temperature PID tuning result
-    }
-  #endif
-
-  #if ENABLED(PLATFORM_M997_SUPPORT)
-    void onFirmwareFlash() {}
-  #endif
-
-  void onSteppersDisabled() {}
-  void onSteppersEnabled() {}
-  void onAxisDisabled(const axis_t) {}
-  void onAxisEnabled(const axis_t) {}
 }
 
 #endif // DGUS_LCD_UI_RELOADED

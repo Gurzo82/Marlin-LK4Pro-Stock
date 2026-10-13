@@ -2,7 +2,7 @@
  * Config.h - Marlin Firmware distilled configuration
  * Usage: Place this file in the 'Marlin' folder with the name 'Config.h'.
  *
- * Exported by Marlin build on 2026-10-13 at 18:02:38.
+ * Exported by Marlin build on 2026-10-13 at 20:59:28.
  */
 
 //
@@ -264,13 +264,16 @@
 #define ENABLE_LEVELING_FADE_HEIGHT
 #define EXTRAPOLATE_BEYOND_GRID
 #define BED_TRAMMING_HEIGHT                      0.0
+#define LEVELING_BED_TEMP                        PROBING_BED_TEMP
 #define BED_TRAMMING_LEVELING_ORDER              { LF, RF, RB, LB }
 #define GRID_MAX_POINTS_X                        5
 #define LEVELED_SEGMENT_LENGTH                   5.0
 #define AUTO_BED_LEVELING_BILINEAR
 #define ENABLE_LEVELING_AFTER_G28
 #define BED_TRAMMING_INSET_LFRB                  { 30, 30, 30, 30 }
+#define MAX_SAVED_MESHES                         100
 #define BED_TRAMMING_INCLUDE_CENTER
+#define LEVELING_NOZZLE_TEMP                     PROBING_NOZZLE_TEMP
 #define LCD_BED_TRAMMING
 #define BED_TRAMMING_Z_HOP                       1.0
 
@@ -305,6 +308,7 @@
 #define SDCARD_CONNECTION                        LCD
 #define SDSORT_GCODE                             false
 #define SDSORT_USES_STACK                        true
+#define SD_MAX_READ_ERRORS                       5
 #define SDSORT_QUICK                             true
 #define SD_FINISHED_STEPPERRELEASE               true
 #define SD_FINISHED_RELEASECOMMAND               "M84"

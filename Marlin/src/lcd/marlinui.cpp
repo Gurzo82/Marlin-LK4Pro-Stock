@@ -69,6 +69,11 @@ MarlinUI ui;
   bool MarlinUI::wait_for_move; // = false
 #endif
 
+#if ENABLED(MIGHTYBOARD_BACK_STATUS_BUTTONS)
+  // Flags set from interrupt context; handled in main loop
+  volatile uint8_t MarlinUI::request_back = 0;
+#endif
+
 constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
 
 #if HAS_STATUS_MESSAGE
@@ -276,7 +281,7 @@ void MarlinUI::init() {
     SET_INPUT_PULLUP(BTN_EN2);
   #endif
   #if BUTTON_EXISTS(ENC)
-    SET_INPUT_PULLUP(BTN_ENC);
+    TERN(MIGHTYBOARD_DISABLE_ENC_PULLUP, SET_INPUT, SET_INPUT_PULLUP)(BTN_ENC);
   #endif
   #if BUTTON_EXISTS(ENC_EN)
     SET_INPUT_PULLUP(BTN_ENC_EN);
@@ -285,16 +290,16 @@ void MarlinUI::init() {
     SET_INPUT_PULLUP(BTN_BACK);
   #endif
   #if BUTTON_EXISTS(UP)
-    SET_INPUT(BTN_UP);
+    TERN(MIGHTYBOARD_BUTTON_PULLUPS, SET_INPUT_PULLUP, SET_INPUT)(BTN_UP);
   #endif
   #if BUTTON_EXISTS(DOWN)
-    SET_INPUT(BTN_DOWN);
+    TERN(MIGHTYBOARD_BUTTON_PULLUPS, SET_INPUT_PULLUP, SET_INPUT)(BTN_DOWN);
   #endif
   #if BUTTON_EXISTS(LFT)
-    SET_INPUT(BTN_LEFT);
+    TERN(MIGHTYBOARD_BUTTON_PULLUPS, SET_INPUT_PULLUP, SET_INPUT)(BTN_LEFT);
   #endif
   #if BUTTON_EXISTS(RT)
-    SET_INPUT(BTN_RIGHT);
+    TERN(MIGHTYBOARD_BUTTON_PULLUPS, SET_INPUT_PULLUP, SET_INPUT)(BTN_RIGHT);
   #endif
 
   #if HAS_SHIFT_ENCODER
@@ -819,6 +824,11 @@ void MarlinUI::init() {
     millis_t ManualMove::start_time = 0;
     float ManualMove::menu_scale = 1;
     screenFunc_t ManualMove::screen_ptr;
+    #if ALL(TFT_COLOR_UI, TOUCH_SCREEN)
+      float ManualMove::step_sizes[8];
+      const char *ManualMove::step_labels[8];
+      uint8_t ManualMove::step_count; // = 0
+    #endif
     #if IS_KINEMATIC
       float ManualMove::offset = 0;
       xyze_pos_t ManualMove::all_axes_destination = { 0 };
@@ -1032,6 +1042,16 @@ void MarlinUI::init() {
           wait_for_unclick = false;
       }
 
+      #if ENABLED(MIGHTYBOARD_BACK_STATUS_BUTTONS)
+        // Handle requests set from interrupt context (ISR-safe)
+        if (request_back) {
+          quick_feedback();
+          if (request_back == 1) goto_previous_screen();
+          else if (request_back == 2) return_to_status();
+          request_back = 0;
+        }
+      #endif
+
       if (LCD_BACK_CLICKED()) {
         quick_feedback();
         goto_previous_screen();
@@ -1191,7 +1211,9 @@ void MarlinUI::init() {
             break;
         } // switch
 
-        TERN_(HAS_ADC_BUTTONS, keypad_buttons = 0);
+        #if ALL(HAS_ADC_BUTTONS, HAS_ENCODER_ACTION, IS_RRW_KEYPAD)
+          keypad_buttons = 0;
+        #endif
 
         #if HAS_MARLINUI_U8GLIB
 
@@ -1213,6 +1235,7 @@ void MarlinUI::init() {
             u8g.setColorIndex(1);                 // And reset the color
             run_current_screen();                 // Draw and process the current screen
             first_page = false;
+            TERN_(HAS_MARLINUI_MENU, scroll_screen_end()); // Screen drawn: is the view past the last item?
 
             // The screen handler can clear drawing_screen for an action that changes the screen.
             // If still drawing and there's another page, update max-time and return now.
@@ -1227,6 +1250,7 @@ void MarlinUI::init() {
         #else // !HAS_MARLINUI_U8GLIB
 
           run_current_screen();
+          TERN_(HAS_MARLINUI_MENU, scroll_screen_end()); // Screen drawn: is the view past the last item?
 
           // Apply all DWIN drawing after processing
           TERN_(IS_DWIN_MARLINUI, dwinUpdateLCD());
@@ -1395,11 +1419,19 @@ void MarlinUI::init() {
             next_button_update_ms = now + 300;
           }
           else if (BUTTON_PRESSED(LEFT)) {
-            encoderDiff = -pulses;
+            #if ENABLED(MIGHTYBOARD_BACK_STATUS_BUTTONS)
+              request_back = 1;                // ISR-safe: flag action run in the main loop
+            #else
+              encoderDiff = -pulses;
+            #endif
             next_button_update_ms = now + 300;
           }
           else if (BUTTON_PRESSED(RIGHT)) {
-            encoderDiff = pulses;
+            #if ENABLED(MIGHTYBOARD_BACK_STATUS_BUTTONS)
+              request_back = 2;               // ISR-safe: flag action run in the main loop
+            #else
+              encoderDiff = -pulses;
+            #endif
             next_button_update_ms = now + 300;
           }
 
@@ -2068,7 +2100,9 @@ uint8_t expand_u8str_P(char * const outstr, PGM_P const ptpl, const int8_t ind, 
     void MarlinUI::eeprom_alert(const EEPROM_Error err) {
       FSTR_P const err_msg = eeprom_err(err);
       set_status(err_msg);
-      TERN_(HOST_PROMPT_SUPPORT, hostui.notify(err_msg));
+      #if ENABLED(HOST_PROMPT_SUPPORT) && DISABLED(HOST_STATUS_NOTIFICATIONS)
+        hostui.notify(err_msg);
+      #endif
       #if HAS_MARLINUI_MENU
         editable.uint8 = err;
         goto_screen([]{
