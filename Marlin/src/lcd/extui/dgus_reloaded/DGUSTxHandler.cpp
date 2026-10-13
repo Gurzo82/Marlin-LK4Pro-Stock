@@ -297,8 +297,9 @@ void DGUSTxHandler::ablGrid(DGUS_VP &vp) {
   for (int16_t i = 0; i < DGUS_LEVEL_GRID_SIZE; i++) {
     point.x = i % (GRID_MAX_POINTS_X);
     point.y = i / (GRID_MAX_POINTS_X);
-    // fixed = dgus.toFixedPoint<float, int16_t, 3>(ExtUI::getMeshPoint(point));
-    fixed = dgus.toFixedPoint<float, int16_t, 3>((screen.probing_values[point.x][point.y]));  // tx3m use the value from the screen so that it can be updated even if the position is not known yet
+    // tx3m - Show the mesh Marlin uses (loaded from EEPROM), not the screen's copy that is only filled while probing.
+    // The probing screen shows check marks, not values, so nothing is lost.
+    fixed = dgus.toFixedPoint<float, int16_t, 3>(ExtUI::getMeshPoint(point));
     DEBUG_ECHOLNPGM("grid x ", point.x, " y ", point.y, " value ", fixed);
     data[i] = Swap16(fixed);
   }
