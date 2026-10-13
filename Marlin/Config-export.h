@@ -2,7 +2,7 @@
  * Config.h - Marlin Firmware distilled configuration
  * Usage: Place this file in the 'Marlin' folder with the name 'Config.h'.
  *
- * Exported by Marlin build on 2026-10-13 at 20:59:28.
+ * Exported by Marlin build on 2026-10-13 at 21:58:27.
  */
 
 //
@@ -84,6 +84,7 @@
 #define VALIDATE_HOMING_ENDSTOPS
 #define HOMING_BUMP_MM                           { 5, 5, 2 }
 #define Z_SAFE_HOMING_X_POINT                    X_CENTER
+#define Z_AFTER_HOMING                           10
 #define Z_SAFE_HOMING_Y_POINT                    Y_CENTER
 #define Z_SAFE_HOMING
 
