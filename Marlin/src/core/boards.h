@@ -60,7 +60,6 @@
 #define BOARD_RAMPS_BTT_16_PLUS_EFF   1042  // RAMPS 1.6+ (Power outputs: Hotend, Fan0, Fan1)
 #define BOARD_RAMPS_BTT_16_PLUS_EEF   1043  // RAMPS 1.6+ (Power outputs: Hotend0, Hotend1, Fan)
 #define BOARD_RAMPS_BTT_16_PLUS_SF    1044  // RAMPS 1.6+ (Power outputs: Spindle, Controller Fan)
-#define BOARD_LGT                     1050  // LGT V1.1 Motherboard for Alphawise & longer LK4 pro LK1 pro U30 pro  tx3m
 
 //
 // RAMPS Derivatives - ATmega1280, ATmega2560

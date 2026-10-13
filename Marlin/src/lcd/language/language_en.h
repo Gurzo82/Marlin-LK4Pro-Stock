@@ -1075,7 +1075,6 @@ namespace LanguageNarrow_en {
   LSTR MSG_PROGRESS_FEED_FSENSOR          = _UxGT("Feeding to FSensor");
   // tx3m
   LSTR DGUS_MSG_FEATURE_NOT_ENABLED       = _UxGT("Feature is not enabled");
-  LSTR DGUS_MSG_EXT_PID_DISABLED          = _UxGT("Extruder PID disabled");
   LSTR DGUS_MSG_COOLING                   = _UxGT("Cooling...");
 }
 
