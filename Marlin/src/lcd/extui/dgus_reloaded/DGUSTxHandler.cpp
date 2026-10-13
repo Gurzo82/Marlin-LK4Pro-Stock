@@ -280,22 +280,9 @@ void DGUSTxHandler::stepIcons(DGUS_VP &vp) {
 
 void DGUSTxHandler::ablDisableIcon(DGUS_VP &vp) {
 #if HAS_LEVELING
-  uint16_t data;
-
-  if (ExtUI::getLevelingActive()) {
-    data = (uint16_t)DGUS_Data::Status::ENABLED;
-
-    dgus.enableControl(DGUS_ScreenID::LEVELING_AUTOMATIC,
-                               DGUSDisplay::RETURN_KEY_CODE,
-                               DGUS_Control::DISABLE);
-  }
-  else {
-    data = (uint16_t)DGUS_Data::Status::DISABLED;
-
-    dgus.disableControl(DGUS_ScreenID::LEVELING_AUTOMATIC,
-                                DGUSDisplay::RETURN_KEY_CODE,
-                                DGUS_Control::DISABLE);
-  }
+  // tx3m - The LK4 Pro screen has no "Disable ABL" button. Touch area 5 of this page is the Start
+  // (probe) button, so don't switch it, or Start can't be pressed while leveling is off.
+  const uint16_t data = (uint16_t)(ExtUI::getLevelingActive() ? DGUS_Data::Status::ENABLED : DGUS_Data::Status::DISABLED);
 
   dgus.write((uint16_t)vp.addr, Swap16(data));
 #endif
