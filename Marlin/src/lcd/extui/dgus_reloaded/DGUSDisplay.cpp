@@ -34,6 +34,9 @@
 
 #include "../ui_api.h"
 #include "../../../gcode/gcode.h"
+#if ENABLED(DEBUG_DGUSLCD)
+  #include "../../../libs/hex_print.h"
+#endif
 
 long map_precise(float x, long in_min, long in_max, long out_min, long out_max) {
   return LROUND((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
@@ -169,6 +172,7 @@ void DGUSDisplay::playSound(uint8_t start, uint8_t len, uint8_t volume) {
 }
 
 void DGUSDisplay::enableControl(const DGUS_ScreenID screenID, DGUS_ControlType type, DGUS_Control control) {
+  DEBUG_ECHOLNPGM("DGUS control on: page ", (uint8_t)screenID, " #", (uint8_t)control, " type ", (uint8_t)type);  // tx3m
   const uint8_t command[] = { 0x5A, 0xA5, 0x00, (uint8_t)screenID, (uint8_t)control, type, 0x00, 0x01 };
   write(0xB0, command, sizeof(command));
 
@@ -177,6 +181,7 @@ void DGUSDisplay::enableControl(const DGUS_ScreenID screenID, DGUS_ControlType t
 }
 
 void DGUSDisplay::disableControl(const DGUS_ScreenID screenID, DGUS_ControlType type, DGUS_Control control) {
+  DEBUG_ECHOLNPGM("DGUS control off: page ", (uint8_t)screenID, " #", (uint8_t)control, " type ", (uint8_t)type);  // tx3m
   const uint8_t command[] = { 0x5A, 0xA5, 0x00, (uint8_t)screenID, (uint8_t)control, type, 0x00, 0x00 };
   write(0xB0, command, sizeof(command));
 
@@ -275,9 +280,12 @@ void DGUSDisplay::processRx() {
         if (command == DGUS_READVAR) {
           const uint16_t addr = tmp[0] << 8 | tmp[1];
           const uint8_t dlen = tmp[2] << 1;  // Convert to Bytes. (Display works with words)
+          // tx3m - Log every value the display sends (touches)
+          if (rx_datagram_len >= 6) DEBUG_ECHOLNPGM("DGUS rx: addr 0x", hex_word(addr), " bytes ", dlen, " data ", hex_byte(tmp[3]), " ", hex_byte(tmp[4]));
           if (addr == DGUS_VERSION && dlen == 2) {
             gui_version = tmp[3];
             os_version = tmp[4];
+            DEBUG_ECHOLNPGM("DGUS versions: GUI ", gui_version, " OS ", os_version);  // tx3m
             rx_datagram_state = DGUS_IDLE;
             break;
           }
