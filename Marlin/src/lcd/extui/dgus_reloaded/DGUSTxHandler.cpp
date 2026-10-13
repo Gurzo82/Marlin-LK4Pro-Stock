@@ -193,7 +193,7 @@ void DGUSTxHandler::percent(DGUS_VP &vp) {
 void DGUSTxHandler::statusIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
-  if (ExtUI::isPrinting() && !ExtUI::isPrintingPaused()) {  // tx3m - Resume replaces Pause
+  if (ExtUI::isPrinting() && !screen.isPrintPaused()) {  // tx3m - Resume replaces Pause
     icons = (uint16_t)DGUS_Data::StatusIcon::PAUSE;
 
     dgus.enableControl(DGUS_ScreenID::PRINT_STATUS,
@@ -206,7 +206,7 @@ void DGUSTxHandler::statusIcons(DGUS_VP &vp) {
                                 DGUS_Control::PAUSE);
   }
 
-  if (ExtUI::isPrintingPaused()) {
+  if (screen.isPrintPaused()) {  // tx3m
     icons |= (uint16_t)DGUS_Data::StatusIcon::RESUME;
 
     dgus.enableControl(DGUS_ScreenID::PRINT_STATUS,
@@ -499,7 +499,7 @@ void DGUSTxHandler::filamentUsed(DGUS_VP &vp) {
 void DGUSTxHandler::waitIcons(DGUS_VP &vp) {
   uint16_t icons = 0;
 
-  if (ExtUI::isPrintingPaused()
+  if (screen.isPrintPaused()
   // tx3m - Abort only works while the pause waits for the user (see abortPrint())
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
     && screen.isParkedForResume() && marlin.wait_for_user

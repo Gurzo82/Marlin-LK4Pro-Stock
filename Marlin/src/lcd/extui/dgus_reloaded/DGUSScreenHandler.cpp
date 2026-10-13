@@ -469,6 +469,12 @@ bool DGUSScreenHandler::isParkedForResume() {
   #endif
 }
 
+// tx3m - Print paused by the screen, an SD pause or the host (parked, or print timer paused).
+// Unlike ExtUI::isPrintingPaused(), an SD file that is only open (e.g. left by OctoPrint) doesn't count.
+bool DGUSScreenHandler::isPrintPaused() {
+  return ExtUI::isPrinting() && (TERN0(ADVANCED_PAUSE_FEATURE, did_pause_print) || print_job_timer.isPaused());
+}
+
 // tx3m - Show "Print Aborted" and the elapsed time on PRINT_FINISHED
 void DGUSScreenHandler::printAborted() {
   setStatusMessage(GET_TEXT_F(MSG_PRINT_ABORTED), 0);

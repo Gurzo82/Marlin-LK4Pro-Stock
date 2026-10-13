@@ -172,6 +172,15 @@ void DGUSRxHandler::screenChange(DGUS_VP &vp, void *data_ptr) {
   }
 #endif // HAS_MEDIA
 
+// tx3m - With PARK_HEAD_ON_PAUSE every SD pause parks (did_pause_print), so an SD file that is open
+// but neither printing nor parked is left over, e.g. after OctoPrint cancels or selects an SD print.
+// The M24 queued by the screen's pause and resume would start printing it, so close it first.
+static void closeStaleMediaFile() {
+  #if ALL(HAS_MEDIA, PARK_HEAD_ON_PAUSE)
+    if (card.isPaused() && !did_pause_print) card.closefile();
+  #endif
+}
+
 // tx3m - Stop the print, also when it is paused and parked by M125
 static void abortPrint() {
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
@@ -243,11 +252,12 @@ void DGUSRxHandler::printPause(DGUS_VP &vp, void *data_ptr) {
   }
 
   // tx3m - Pausing again would queue another park after the resume
-  if (!ExtUI::isPrinting() || ExtUI::isPrintingPaused()) {
+  if (!ExtUI::isPrinting() || screen.isPrintPaused()) {
     screen.triggerFullUpdate();
     return;
   }
 
+  closeStaleMediaFile();  // tx3m
   ExtUI::pausePrint();
 }
 
@@ -266,7 +276,7 @@ void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
-  if (!ExtUI::isPrintingPaused()) {
+  if (!screen.isPrintPaused()) {  // tx3m
     screen.triggerFullUpdate();
     return;
   }
@@ -282,6 +292,7 @@ void DGUSRxHandler::printResume(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
+  closeStaleMediaFile();  // tx3m - A host pause (M76): resume the host, not a left-over SD file
   ExtUI::resumePrint();
 }
 
@@ -1080,7 +1091,7 @@ void DGUSRxHandler::waitAbort(DGUS_VP &vp, void *data_ptr) {
     return;
   }
 
-  if (!ExtUI::isPrintingPaused()) {
+  if (!screen.isPrintPaused()) {  // tx3m
     screen.triggerFullUpdate();
     return;
   }

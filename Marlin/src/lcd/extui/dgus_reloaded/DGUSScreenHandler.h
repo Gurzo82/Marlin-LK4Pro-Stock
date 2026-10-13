@@ -73,6 +73,7 @@ public:
 
   static void showPauseMessage(PauseMessage message, PauseMode mode);  // tx3m
   static bool isParkedForResume();  // tx3m
+  static bool isPrintPaused();      // tx3m
   static void printAborted();       // tx3m
   static void statusChanged(const char * const msg);  // tx3m
   static void setMessageLine(const char * const msg, const uint8_t line);
