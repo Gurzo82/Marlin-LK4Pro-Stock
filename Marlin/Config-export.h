@@ -2,7 +2,7 @@
  * Config.h - Marlin Firmware distilled configuration
  * Usage: Place this file in the 'Marlin' folder with the name 'Config.h'.
  *
- * Exported by Marlin build on 2026-10-11 at 00:07:22.
+ * Exported by Marlin build on 2026-10-13 at 18:02:38.
  */
 
 //
@@ -10,6 +10,7 @@
 //
 #define SHOW_BOOTSCREEN
 #define STRING_CONFIG_H_AUTHOR                   "tx3m, jgbrown54, LKxPro"
+#define SOURCE_CODE_URL                          "github.com/tx3m/Marlin-LK4Pro"
 
 //
 // Machine
@@ -19,7 +20,7 @@
 #define LGT_MAC
 #define LK4_Pro
 #define LCD_HEIGHT                               4
-#define LKPro_FW_VERSION                         "2.1.3-b3/tx3mV25"
+#define LKPro_FW_VERSION                         "tx3mV25"
 
 //
 // EEPROM

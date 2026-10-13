@@ -63,6 +63,7 @@
 
 // Author info of this build printed to the host during boot and M115
 #define STRING_CONFIG_H_AUTHOR "tx3m, jgbrown54, LKxPro" // Original author or contributor.
+#define SOURCE_CODE_URL "github.com/tx3m/Marlin-LK4Pro" // tx3m - Reported by M115, where this firmware's source is
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 // Show the Marlin bootscreen on startup. ** ENABLE FOR PRODUCTION **
@@ -74,7 +75,14 @@
 //#define LK5_Pro //  for LK5pro
 #define LKPro_BLTOUCH // for LK4 and LK5
 
-#define LKPro_FW_VERSION "2.1.3-b3/tx3mV25"  // versions above 100 use INPUT_SHAPING
+// tx3m - Extruder (E) driver. The stock LK4 Pro has an A4988 for E and silent TMC2208 drivers for X/Y/Z.
+// Enable if the E driver was replaced with a silent TMC2208. env:LK4Pro_SilentE enables it automatically.
+//#define LKPro_SILENT_E_DRIVER
+
+// Set from git by env:LK4Pro (see ini/lk4pro.ini). This value is only used for builds without git.
+#ifndef LKPro_FW_VERSION
+  #define LKPro_FW_VERSION "tx3mV25"  // versions above 100 use INPUT_SHAPING
+#endif
 #define LCD_HEIGHT 4 // number of message lines in the wait screen
 
 //#define DEBUG_DGUSLCD
@@ -189,7 +197,11 @@
 //#define U_DRIVER_TYPE  A4988
 //#define V_DRIVER_TYPE  A4988
 //#define W_DRIVER_TYPE  A4988
-#define E0_DRIVER_TYPE TMC2208_STANDALONE  // LK4 Pro Stock might also be A4988
+#if ENABLED(LKPro_SILENT_E_DRIVER)
+  #define E0_DRIVER_TYPE TMC2208_STANDALONE  // tx3m - Replaced with a silent driver
+#else
+  #define E0_DRIVER_TYPE A4988               // LK4 Pro stock
+#endif
 //#define E1_DRIVER_TYPE A4988
 //#define E2_DRIVER_TYPE A4988
 //#define E3_DRIVER_TYPE A4988
@@ -1302,7 +1314,6 @@
 #else
   #define Z_MIN_ENDSTOP_HIT_STATE LOW //  For Alphawise and Longer U30 pro LK4 pro tx3m
 #endif
-#define Z_MIN_ENDSTOP_HIT_STATE HIGH
 #define Z_MAX_ENDSTOP_HIT_STATE HIGH
 #define I_MIN_ENDSTOP_HIT_STATE HIGH
 #define I_MAX_ENDSTOP_HIT_STATE HIGH
@@ -1943,7 +1954,9 @@
 #ifdef LK1_Pro
   #define INVERT_E0_DIR false
 #else
-  #define INVERT_E0_DIR true  // tx3m
+  // tx3m - Correct for the stock A4988 and for the silent TMC2208 on the author's printer.
+  // If the extruder runs backwards after a driver swap, set this to false (or turn the motor plug around).
+  #define INVERT_E0_DIR true
 #endif
 #define INVERT_E1_DIR false
 #define INVERT_E2_DIR false
