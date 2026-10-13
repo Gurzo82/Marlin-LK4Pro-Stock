@@ -42,7 +42,9 @@
 #include "../../../../module/temperature.h"
 
 const char DGUS_MACHINENAME[] PROGMEM = MACHINE_NAME;
-const char DGUS_MARLINVERSION[] PROGMEM = SHORT_BUILD_VERSION "-" LKPro_FW_VERSION;  // tx3m
+// tx3m - The screen's version field shows 16 characters (DGUS_VERSION_LEN), e.g. "2.1.x tx3mV37".
+// SHORT_BUILD_VERSION ("bugfix-2.1.x") is too long for it, so only the Marlin series is shown.
+const char DGUS_MARLINVERSION[] PROGMEM = "2.1.x " LKPro_FW_VERSION;
 
 #define VP_HELPER(ADDR, SIZE, FLAGS, EXTRA, RXHANDLER, TXHANDLER) \
   { .addr = ADDR, \
