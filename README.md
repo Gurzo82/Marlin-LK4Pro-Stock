@@ -81,6 +81,7 @@ jgbrown54 and in this fork. See the screen firmware repository for screenshots.
    | `LK4Pro_SilentE` | Replaced with a silent TMC2208 | `.pio/build/LK4Pro_SilentE/bugfix-2.1.x_V29_LK4Pro-SilentE.hex` |
 
    Use `pio run -e LK4Pro` or `pio run -e LK4Pro_SilentE` to build only one.
+   A copy of every build is also kept in `.pio/firmware/`, so older versions stay available for comparison.
 
 The version number comes from git: the newest `v<N>` tag plus the number of commits on this branch since then.
 Merging official Marlin counts as one commit. A build with uncommitted changes gets `-dev` added (e.g. `V29-dev`).

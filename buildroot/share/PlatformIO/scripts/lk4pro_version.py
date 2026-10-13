@@ -9,6 +9,7 @@
 #  - Passed to the build as LKPro_FW_VERSION ("tx3mV<N>"), shown on the screen.
 #  - After the build, firmware.hex is copied to "<Marlin version>_V<N>_<model>.hex",
 #    e.g. "bugfix-2.1.x_V26_LK4Pro.hex", or "..._LK4Pro-SilentE.hex" with the silent E driver.
+#    A copy of every build is kept in .pio/firmware (a later build of the same version replaces it).
 #
 #  Without git or a "v<N>" tag, the LKPro_FW_VERSION from Configuration.h is used.
 #
@@ -57,7 +58,12 @@ if pioutil.is_pio_build():
     def copy_hex(source, target, env):
         build_dir = Path(env.subst('$BUILD_DIR'))
         shutil.copyfile(build_dir / 'firmware.hex', build_dir / hex_name)
+        # Keep every version in .pio/firmware, since the build folder is cleaned when the configuration changes
+        archive_dir = project_dir / '.pio' / 'firmware'
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(build_dir / 'firmware.hex', archive_dir / hex_name)
         print(f'Firmware: {build_dir / hex_name}')
+        print(f'Archived: {archive_dir / hex_name}')
 
     print(f'lk4pro_version: building {"tx3m" + version}')
     env.AddPostAction('$BUILD_DIR/${PROGNAME}.hex', copy_hex)
