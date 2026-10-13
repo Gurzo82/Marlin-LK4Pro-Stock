@@ -312,10 +312,10 @@ void DGUSTxHandler::ablGrid(DGUS_VP &vp) {
     point.y = i / (GRID_MAX_POINTS_X);
     // fixed = dgus.toFixedPoint<float, int16_t, 3>(ExtUI::getMeshPoint(point));
     fixed = dgus.toFixedPoint<float, int16_t, 3>((screen.probing_values[point.x][point.y]));  // tx3m use the value from the screen so that it can be updated even if the position is not known yet
-    DEBUG_ECHOLNPAIR_F("grid x ", point.x, " y ", point.y, " value ", fixed);
+    DEBUG_ECHOLNPGM("grid x ", point.x, " y ", point.y, " value ", fixed);
     data[i] = Swap16(fixed);
   }
-  DEBUG_ECHOLNPAIR_F("sending byte count", sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
+  DEBUG_ECHOLNPGM("sending byte count ", sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
   dgus.write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
 }
 
