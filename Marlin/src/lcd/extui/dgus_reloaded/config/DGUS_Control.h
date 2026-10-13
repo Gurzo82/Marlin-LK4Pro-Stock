@@ -21,30 +21,36 @@
  */
 #pragma once
 
+/**
+ * tx3m - Touch control numbers for the LK4 Pro screen (tx3m/DWIN_LK4Pro).
+ * The display counts all touch areas of a page from 0, in the order of DWIN_SET/13_touch.bin
+ * (confirmed with the DGUS debug log on the file list). These differ from the official
+ * DGUS Reloaded screen, so they must follow the screen firmware.
+ */
 enum class DGUS_Control : uint8_t {
 
   // PRINT
-  FILE0       = 1, // RETURN_KEY_CODE
-  FILE1       = 2, // RETURN_KEY_CODE
-  FILE2       = 3, // RETURN_KEY_CODE
-  FILE3       = 4, // RETURN_KEY_CODE
-  FILE4       = 5, // RETURN_KEY_CODE
-  GO_BACK     = 6, // RETURN_KEY_CODE
-  SCROLL_UP   = 7, // RETURN_KEY_CODE
-  SCROLL_DOWN = 8, // RETURN_KEY_CODE
+  FILE0       = 2, // RETURN_KEY_CODE
+  FILE1       = 3, // RETURN_KEY_CODE
+  FILE2       = 4, // RETURN_KEY_CODE
+  FILE3       = 5, // RETURN_KEY_CODE
+  FILE4       = 6, // RETURN_KEY_CODE
+  GO_BACK     = 7, // RETURN_KEY_CODE
+  SCROLL_UP   = 8, // RETURN_KEY_CODE
+  SCROLL_DOWN = 0, // RETURN_KEY_CODE
 
   // PRINT_STATUS
-  PAUSE       = 1, // POPUP_WINDOW
-  RESUME      = 2, // POPUP_WINDOW
+  PAUSE       = 4, // POPUP_WINDOW
+  RESUME      = 5, // POPUP_WINDOW
 
   // LEVELING_AUTOMATIC
-  DISABLE     = 5, // RETURN_KEY_CODE
+  DISABLE     = 5, // RETURN_KEY_CODE (not on this screen, see ablDisableIcon())
 
   // SETTINGS_MENU2
-  EXTRA2      = 6, // RETURN_KEY_CODE
+  EXTRA2      = 6, // RETURN_KEY_CODE (not on this screen)
 
   // WAIT
-  ABORT       = 1, // POPUP_WINDOW
-  CONTINUE    = 2  // RETURN_KEY_CODE
+  ABORT       = 0, // POPUP_WINDOW
+  CONTINUE    = 1  // RETURN_KEY_CODE
 
 };
