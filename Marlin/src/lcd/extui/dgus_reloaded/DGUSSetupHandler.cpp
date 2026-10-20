@@ -164,8 +164,10 @@ bool DGUSSetupHandler::levelingAutomatic() {
 }
 
 bool DGUSSetupHandler::levelingProbing() {
+#if HAS_LEVELING
   screen.probing_icons[0] = 0;
   screen.probing_icons[1] = 0;
+#endif
 
   return true;
 }

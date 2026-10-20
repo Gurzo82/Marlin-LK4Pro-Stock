@@ -928,6 +928,7 @@ namespace LanguageNarrow_it {
   LSTR DGUS_MSG_INVALID_RECOVERY_DATA     = _UxGT("Dati di recupero non validi");              // Invalid recovery data
   LSTR DGUS_MSG_HOMING_REQUIRED           = _UxGT("Azzeramento richiesto");                    // Homing required
   LSTR DGUS_MSG_BUSY                      = _UxGT("Occupato");                                 // Busy
+  LSTR DGUS_MSG_NO_PROBE                  = _UxGT("Nessuna sonda collegata");                 // No probe connected
   LSTR DGUS_MSG_HOMING                    = _UxGT("Azzeramento...");                           // Homing...
   LSTR DGUS_MSG_FW_OUTDATED               = _UxGT("Richiesto aggiornamento DWIN GUI/OS");      // DWIN GUI/OS update required
   LSTR DGUS_MSG_ABL_REQUIRED              = _UxGT("Richiesto autolivellamento piatto");        // Auto bed leveling required

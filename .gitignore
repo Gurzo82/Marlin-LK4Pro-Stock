@@ -185,3 +185,8 @@ sqlite*.db
 .zed/
 *mcp*.db
 github-app.yml
+
+
+
+# I firmware gia' compilati della release sono versionati nel repo
+!firmware/*.hex

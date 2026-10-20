@@ -269,6 +269,7 @@ void DGUSScreenHandler::playTone(const uint16_t frequency, const uint16_t durati
 }
 
 void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos) {
+#if HAS_LEVELING
   if (current_screenID != DGUS_ScreenID::LEVELING_PROBING) {
     if (current_screenID == DGUS_ScreenID::LEVELING_AUTOMATIC)
       triggerFullUpdate();
@@ -282,10 +283,12 @@ void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos) {
     probing_icons[0] = probing_icons[1] = 0;
 
   triggerFullUpdate();
+#endif
 }
 
 // tx3m added a version that takes also the zval as a param
 void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos, const float zval) {
+#if HAS_LEVELING
   if (current_screenID != DGUS_ScreenID::LEVELING_PROBING) {
     if (current_screenID == DGUS_ScreenID::LEVELING_AUTOMATIC)
       triggerFullUpdate();
@@ -300,6 +303,7 @@ void DGUSScreenHandler::meshUpdate(const int8_t xpos, const int8_t ypos, const f
     probing_icons[0] = probing_icons[1] = 0;
 
   triggerFullUpdate();
+#endif
 }
 
 void DGUSScreenHandler::printTimerStarted() {

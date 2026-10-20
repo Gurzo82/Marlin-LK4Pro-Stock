@@ -1894,6 +1894,25 @@
    * an option on the LCD screen to continue the print from the last-known
    * point in the file.
    */
+/**
+ * Funzionalita' aggiuntive del firmware "Plus" (env:LK4Pro_Plus)
+ *
+ * SD_DIAG_LOG       Log diagnostico su file SD card: scrive un CSV (LK4LOG<n>.csv)
+ *                   con posizione, feedrate e temperature.
+ *                   Uso: M9000 S1 avvia, M9000 S0 ferma, M9000 stato.
+ *                   Il logger si rifiuta di partire durante una stampa, per non
+ *                   corrompere la SD card.
+ * LKPRO_ZOFFSET_UI  Z-offset regolabile dal display anche senza BLTouch: usa
+ *                   l'home offset (M206 Z) al posto dell'offset sonda (M851),
+ *                   che sarebbe inerte su una macchina senza sonda.
+ *
+ * La variante "stock" (env:LK4Pro) non le abilita: restano solo le correzioni
+ * essenziali per la LK4 Pro di serie.
+ */
+//#define SD_DIAG_LOG
+//#define LKPRO_ZOFFSET_UI
+
+
   #define POWER_LOSS_RECOVERY // tx3m
   #if ENABLED(POWER_LOSS_RECOVERY)
     #define PLR_ENABLED_DEFAULT       true // Power-Loss Recovery enabled by default. (Set with 'M413 Sn' & M500)  tx3m

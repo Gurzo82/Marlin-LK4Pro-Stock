@@ -132,9 +132,11 @@ namespace ExtUI {
   #endif
 
   // Called by UBL only. Mark the point as probed; the value comes with the zval version above.
-  void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
-    if (state == G29_POINT_FINISH) screen.meshUpdate(xpos, ypos);
-  }
+  #if HAS_BED_PROBE
+    void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
+      if (state == G29_POINT_FINISH) screen.meshUpdate(xpos, ypos);
+    }
+  #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume() {

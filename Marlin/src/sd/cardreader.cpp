@@ -993,6 +993,28 @@ void CardReader::openFileWrite(const char * const path) {
 }
 
 /**
+ * Open a file for writing (diagnostic log).
+ * Fails if the file already exists (O_EXCL), so the caller can pick a free name.
+ */
+bool CardReader::openDiagLogFile(const char * const path) {
+  if (!isMounted() || myfile.isOpen()) return false;
+
+  MediaFile &dir = getWorkDir();
+  return myfile.open(&dir, path, O_CREAT | O_EXCL | O_WRITE);
+}
+
+void CardReader::syncDiagLogFile() {
+  if (myfile.isOpen()) myfile.sync();
+}
+
+void CardReader::closeDiagLogFile() {
+  if (myfile.isOpen()) {
+    myfile.sync();
+    myfile.close();
+  }
+}
+
+/**
  * Check if a file exists by absolute or workDir-relative path
  * If the file exists, the long name can also be fetched.
  */

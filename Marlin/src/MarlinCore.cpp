@@ -59,6 +59,12 @@
 #include "gcode/queue.h"
 
 #include "feature/pause.h"
+#if ENABLED(SD_DIAG_LOG)
+  #include "feature/sd_log.h"
+#endif
+#if ENABLED(SD_DIAG_LOG)
+  #include "feature/sd_log.h"
+#endif
 #include "sd/cardreader.h"
 
 #include "lcd/marlinui.h"
@@ -1770,6 +1776,10 @@ void loop() {
     #endif
 
     endstops.event_handler();
+
+    #if ENABLED(SD_DIAG_LOG)
+      sd_log::tick();
+    #endif
 
     TERN_(HAS_TFT_LVGL_UI, printer_state_polling());
 

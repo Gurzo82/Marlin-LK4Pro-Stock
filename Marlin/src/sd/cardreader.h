@@ -321,6 +321,11 @@ public:
   static int16_t get()                            { int16_t out = (int16_t)myfile.read(); sdpos = myfile.curPosition(); return out; }
   static int16_t read(void *buf, uint16_t nbyte)  { return myfile.isOpen() ? myfile.read(buf, nbyte) : -1; }
   static int16_t write(void *buf, uint16_t nbyte) { return myfile.isOpen() ? myfile.write(buf, nbyte) : -1; }
+
+  // Log diagnostico: apre un file in scrittura (fallisce se il file esiste gia')
+  static bool openDiagLogFile(const char * const path);
+  static void syncDiagLogFile();
+  static void closeDiagLogFile();
   static void setIndex(const uint32_t index)      { myfile.seekSet((sdpos = index)); }
 
   #if ENABLED(AUTO_REPORT_SD_STATUS)

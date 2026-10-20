@@ -4545,15 +4545,15 @@ static_assert(_PLUS_TEST(3), "DEFAULT_MAX_ACCELERATION values must be positive."
     #error "DGUS_LCD_UI RELOADED requires a heated bed."
   #elif FAN_COUNT < 1
     #error "DGUS_LCD_UI RELOADED requires a fan."
-  #elif !HAS_BED_PROBE
+  #elif !HAS_BED_PROBE && !ENABLED(DGUS_LCD_UI_RELOADED_NO_PROBE)
     #error "DGUS_LCD_UI RELOADED requires a bed probe."
-  #elif !HAS_MESH
+  #elif !HAS_MESH && !ENABLED(DGUS_LCD_UI_RELOADED_NO_PROBE)
     #error "DGUS_LCD_UI RELOADED requires mesh leveling."
   #elif DISABLED(LCD_BED_TRAMMING)
     #error "DGUS_LCD_UI RELOADED requires LCD_BED_TRAMMING."
   #elif DISABLED(BABYSTEP_ALWAYS_AVAILABLE)
     #error "DGUS_LCD_UI RELOADED requires BABYSTEP_ALWAYS_AVAILABLE."
-  #elif DISABLED(BABYSTEP_ZPROBE_OFFSET)
+  #elif DISABLED(BABYSTEP_ZPROBE_OFFSET) && !ENABLED(DGUS_LCD_UI_RELOADED_NO_PROBE)
     #error "DGUS_LCD_UI RELOADED requires BABYSTEP_ZPROBE_OFFSET."
   #elif ENABLED(HOME_AFTER_DEACTIVATE)
     #error "DGUS_LCD_UI RELOADED requires HOME_AFTER_DEACTIVATE to be disabled."

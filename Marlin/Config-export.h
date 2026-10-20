@@ -2,7 +2,7 @@
  * Config.h - Marlin Firmware distilled configuration
  * Usage: Place this file in the 'Marlin' folder with the name 'Config.h'.
  *
- * Exported by Marlin build on 2026-10-13 at 21:58:27.
+ * Exported by Marlin build on 2026-10-20 at 12:51:30.
  */
 
 //
@@ -16,10 +16,10 @@
 // Machine
 //
 #define MOTHERBOARD                              BOARD_LONGER3D_LKx_PRO
-#define LKPro_BLTOUCH
 #define LGT_MAC
 #define LK4_Pro
 #define LCD_HEIGHT                               4
+#define DGUS_LCD_UI_RELOADED_NO_PROBE
 #define LKPro_FW_VERSION                         "tx3mV25"
 
 //
@@ -35,7 +35,7 @@
 #define X_DRIVER_TYPE                            TMC2208_STANDALONE
 #define Y_DRIVER_TYPE                            TMC2208_STANDALONE
 #define Z_DRIVER_TYPE                            TMC2208_STANDALONE
-#define E0_DRIVER_TYPE                           TMC2208_STANDALONE
+#define E0_DRIVER_TYPE                           A4988
 #define X_ENABLE_ON                              LOW
 #define Y_ENABLE_ON                              LOW
 #define Z_ENABLE_ON                              LOW
@@ -91,9 +91,9 @@
 //
 // Motion
 //
-#define DEFAULT_AXIS_STEPS_PER_UNIT              { 79.5, 80, 405, 145 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT              { 80, 80, 400, 92.6 }
 #define AXIS_RELATIVE_MODES                      { false, false, false, false }
-#define DEFAULT_MAX_FEEDRATE                     { 5*100, 5*100, 20, 60 }
+#define DEFAULT_MAX_FEEDRATE                     { 300, 300, 5, 25 }
 #define DEFAULT_MAX_ACCELERATION                 { 1000, 1000, 100, 3000 }
 #define STEP_STATE_E                             HIGH
 #define STEP_STATE_X                             HIGH
@@ -131,9 +131,8 @@
 //
 #define X_MIN_ENDSTOP_HIT_STATE                  LOW
 #define Y_MIN_ENDSTOP_HIT_STATE                  LOW
-#define Z_MIN_ENDSTOP_HIT_STATE                  HIGH
+#define Z_MIN_ENDSTOP_HIT_STATE                  LOW
 #define ENDSTOPPULLUPS
-#define Z_MIN_PROBE_ENDSTOP_HIT_STATE            HIGH
 
 //
 // Filament Runout Sensors
@@ -148,33 +147,7 @@
 //
 // Probes
 //
-#define PROBING_MARGIN                           5
-#define XY_PROBE_FEEDRATE                        (133*60)
-#define Z_CLEARANCE_BETWEEN_PROBES               5
-#define Z_CLEARANCE_DEPLOY_PROBE                 10
-#define Z_CLEARANCE_MULTI_PROBE                  5
-#define Z_PROBE_FEEDRATE_SLOW                    (Z_PROBE_FEEDRATE_FAST / 2)
-#define PROBE_OFFSET_ZMAX                        20
-#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
-#define NOZZLE_TO_PROBE_OFFSET                   { -52, -8, -2.26 }
-#define Z_MIN_PROBE_REPEATABILITY_TEST
-#define PROBING_BED_TEMP                         60
-#define PROBING_NOZZLE_TEMP                      0
-#define EXTRA_PROBING                            1
-#define MULTIPLE_PROBING                         2
-#define Z_PROBE_FEEDRATE_FAST                    (20*60)
-#define Z_PROBE_ERROR_TOLERANCE                  3
-#define Z_PROBE_LOW_POINT                        -2
-#define PROBE_OFFSET_ZMIN                        -20
-#define PREHEAT_BEFORE_PROBING
 #define EQUAL_MARGIN_ALL_SIDES
-#define BLTOUCH
-
-//
-// BLTouch
-//
-#define BLTOUCH_HS_EXTRA_CLEARANCE               7
-#define BLTOUCH_HS_MODE                          true
 
 //
 // Temperature
@@ -259,22 +232,10 @@
 //
 // Calibrate
 //
-#define DEFAULT_LEVELING_FADE_HEIGHT             2.0
-#define SEGMENT_LEVELED_MOVES
-#define GRID_MAX_POINTS_Y                        GRID_MAX_POINTS_X
-#define ENABLE_LEVELING_FADE_HEIGHT
-#define EXTRAPOLATE_BEYOND_GRID
 #define BED_TRAMMING_HEIGHT                      0.0
-#define LEVELING_BED_TEMP                        PROBING_BED_TEMP
 #define BED_TRAMMING_LEVELING_ORDER              { LF, RF, RB, LB }
-#define GRID_MAX_POINTS_X                        5
-#define LEVELED_SEGMENT_LENGTH                   5.0
-#define AUTO_BED_LEVELING_BILINEAR
-#define ENABLE_LEVELING_AFTER_G28
 #define BED_TRAMMING_INSET_LFRB                  { 30, 30, 30, 30 }
-#define MAX_SAVED_MESHES                         100
 #define BED_TRAMMING_INCLUDE_CENTER
-#define LEVELING_NOZZLE_TEMP                     PROBING_NOZZLE_TEMP
 #define LCD_BED_TRAMMING
 #define BED_TRAMMING_Z_HOP                       1.0
 
@@ -322,9 +283,9 @@
 #define SDSORT_USES_RAM                          true
 #define SDCARD_RATHERRECENTFIRST
 #define SDSORT_REVERSE                           false
+#define LCD_BAUDRATE                             115200
 #define POWER_LOSS_MIN_Z_CHANGE                  0.05
 #define LCD_SERIAL_PORT                          1
-#define LCD_BAUDRATE                             115200
 
 //
 // Caselight
@@ -396,11 +357,6 @@
 #define THERMAL_PROTECTION_BED
 
 //
-// Servos
-//
-#define SERVO_DELAY                              { 50 }
-
-//
 // Stats
 //
 #define PRINTCOUNTER_SAVE_INTERVAL               60
@@ -435,7 +391,6 @@
 // Baby-Stepping
 //
 #define BABYSTEP_MULTIPLICATOR_Z                 1
-#define BABYSTEP_ZPROBE_OFFSET
 #define BABYSTEPPING
 #define BABYSTEP_MULTIPLICATOR_XY                1
 #define BABYSTEP_ALWAYS_AVAILABLE

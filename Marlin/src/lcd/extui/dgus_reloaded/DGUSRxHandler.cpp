@@ -47,7 +47,7 @@
 #endif
 
 void DGUSRxHandler::screenChange(DGUS_VP &vp, void *data_ptr) {
-  const DGUS_ScreenID screenID = (DGUS_ScreenID)((uint8_t*)data_ptr)[1];
+  DGUS_ScreenID screenID = (DGUS_ScreenID)((uint8_t*)data_ptr)[1];
 
   if (vp.addr == DGUS_Addr::SCREENCHANGE_SD) {
     #if HAS_MEDIA
@@ -78,14 +78,12 @@ void DGUSRxHandler::screenChange(DGUS_VP &vp, void *data_ptr) {
   }
 
 #if !HAS_LEVELING
-  // Skip Leveling menu if no automatic leveling
-  if (screen == DGUS_ScreenID::LEVELING_MENU) {
-	if (dgus.getCurrentScreen() == DGUS_ScreenID::SETTINGS_MENU) {
-	  screenID = DGUS_ScreenID::LEVELING_MANUAL;
-	}
-	else {
-	  screenID = DGUS_ScreenID::SETTINGS_MENU;
-	}
+  // Senza sonda non esiste il livellamento automatico: le pagine di probing/auto-leveling
+  // non possono funzionare. Si blocca il cambio pagina con un messaggio esplicito.
+  // (Il menu "Leveling" e' comunque raggiungibile: contiene "Z offset" e "Assisted".)
+  if (screenID == DGUS_ScreenID::LEVELING_AUTOMATIC || screenID == DGUS_ScreenID::LEVELING_PROBING) {
+    screen.setStatusMessage(GET_TEXT_F(DGUS_MSG_NO_PROBE));
+    return;
   }
 #endif
 
@@ -499,9 +497,18 @@ void DGUSRxHandler::zOffset(DGUS_VP &vp, void *data_ptr) {
   const int16_t data = BE16_P(data_ptr);
   const float offset = dgus.fromFixedPoint<int16_t, float, 2>(data);
 
+#if !ENABLED(LKPRO_ZOFFSET_UI)
   const int16_t steps = ExtUI::mmToWholeSteps(offset - ExtUI::getZOffset_mm(), ExtUI::Z);
 
   ExtUI::smartAdjustAxis_steps(steps, ExtUI::Z, true);
+#else
+  // Macchina SENZA sonda: l'offset Z e' l'home offset (M206 Z).
+  // Non e' uno spostamento fisico ma uno shift del sistema di coordinate:
+  // l'homing successivo posiziona l'ugello correttamente rispetto al piano.
+  // Con h = home_offset[Z], dopo l'homing Z = h; l'ugello tocca il piano a Z = 0
+  // quando h coincide con la distanza switch -> piano.
+  motion.home_offset.z = offset;
+#endif
 
   screen.triggerEEPROMSave();
   screen.triggerFullUpdate();
@@ -530,6 +537,7 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
   }
   if (adjust != DGUS_Data::Adjust::INCREMENT) movement = -movement;
 
+#if !ENABLED(LKPRO_ZOFFSET_UI)
   // tx3m smartAdjustAxis_steps() does not work as expected so adjust only the Z offset and then do a relative move
   const float new_offset = ExtUI::getZOffset_mm() + movement;
 
@@ -542,6 +550,12 @@ void DGUSRxHandler::zOffsetStep(DGUS_VP &vp, void *data_ptr) {
   dtostrf(movement, 1, 3, float_str);
   snprintf(cmd, sizeof(cmd), "G91\nG0 Z%s F600\nG90", float_str);
   queue.inject(cmd);
+#else
+  // Macchina SENZA sonda: l'offset Z e' l'home offset (M206 Z).
+  // "Su" = l'ugello si avvicina al piano (dopo il prossimo homing tocca a Z = 0).
+  // Non viene eseguito alcun movimento fisico: l'homing successivo applica il nuovo riferimento.
+  motion.home_offset.z += movement;
+#endif
 
   screen.triggerEEPROMSave();
   screen.triggerFullUpdate();

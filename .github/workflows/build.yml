@@ -1,0 +1,79 @@
+name: Build firmware
+
+on:
+  push:
+    branches: [ main, master, lk4pro ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.env }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - env: LK4Pro
+            name: LK4Pro-Stock
+          - env: LK4Pro_Plus
+            name: LK4Pro-Stock-Plus
+          - env: LK4Pro_SilentE
+            name: LK4Pro-Stock-SilentE
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # serve la cronologia per il numero di versione (V<N>)
+
+      - name: Install PlatformIO
+        run: |
+          python3 -m pip install --upgrade platformio
+          pio pkg install -g -t tool-avrdude
+
+      - name: Build ${{ matrix.env }}
+        run: pio run -e ${{ matrix.env }}
+
+      - name: Rename firmware
+        run: |
+          set -e
+          HEX=$(ls -1 .pio/firmware/*.hex | head -n 1)
+          cp "$HEX" "firmware/${{ matrix.name }}-$(echo "$HEX" | sed -E 's/.*_V([0-9]+).*/V\1/').hex"
+          ls -l firmware/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.name }}
+          path: firmware/*.hex
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.hex
+          generate_release_notes: true
+          body: |
+            Firmware per Longer LK4 Pro stock (senza BLTouch).
+
+            - `LK4Pro-Stock-V<N>.hex` - correzioni essenziali per la macchina di serie
+            - `LK4Pro-Stock-Plus-V<N>.hex` - Stock + Z-offset dal display + log su SD (M9000)
+            - `LK4Pro-Stock-SilentE-V<N>.hex` - per estrusore con TMC2208 silenzioso
+
+            Aggiornare la stampante con `scripts/update.bat` (Windows) o `scripts/update.sh` (Linux/macOS).

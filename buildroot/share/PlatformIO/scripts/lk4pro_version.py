@@ -53,6 +53,10 @@ if pioutil.is_pio_build():
     silent_e = 'LKPro_SILENT_E_DRIVER' in str(env.GetProjectOption('build_flags', '')) \
             or config_value('Marlin/Configuration.h', r'^\s*#define\s+(LKPro_SILENT_E_DRIVER)\b', None)
     if silent_e: model += '-SilentE'
+    # Variante "Plus" (env:LK4Pro_Plus): Z-offset dal display + log diagnostico su SD
+    plus = 'LKPRO_ZOFFSET_UI' in str(env.GetProjectOption('build_flags', '')) \
+        or 'SD_DIAG_LOG' in str(env.GetProjectOption('build_flags', ''))
+    if plus: model += '-Plus'
     hex_name = f'{marlin_version}_{version}_{model}.hex'
 
     def copy_hex(source, target, env):
