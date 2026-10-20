@@ -97,6 +97,17 @@ Il nuovo firmware del display va installato **separatamente** e **insieme** a qu
 
 ---
 
+## Configurazione di Cura
+
+I valori da usare in Cura (baudrate, E-steps, velocità, Linear Advance, power loss recovery,
+Z-offset) sono raccolti in **[docs/CURA.md](docs/CURA.md)**.
+
+In sintesi: **baudrate 250000**, **E-steps 92.6** (uguali al firmware, niente `M92`), velocità
+max **250 mm/s**, accelerazione max **3000 mm/s²**, **Power loss recovery** da attivare, niente
+`G29`, e l'offset Z si gestisce **sul display** (build Plus), non in Cura.
+
+---
+
 ## Cosa cambia rispetto all'upstream
 
 | Area | Upstream | Qui |
