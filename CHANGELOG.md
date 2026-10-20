@@ -7,11 +7,12 @@ Tutte le varianti del firmware per la Longer LK4 Pro stock sono elencate in
 
 ### Correzione
 
-- **La UI del display si avviava solo con un EEPROM non valido**: dopo il Factory Reset
-  (che rende l'EEPROM valido) il boot passava da `onLoadSettings` → `loadSettings()`, che non
-  impostava `settings_ready` → il display restava **fermo sul logo Marlin** senza avviarsi.
-  Ora `settings_ready` viene impostato anche in quel percorso.
-  (Bug presente nel fork di partenza, non introdotto dalle modifiche di questo repository.)
+- **Avvio della UI del display reso indipendente dal percorso di lettura dell'EEPROM**:
+  `settings_ready` viene ora impostato anche in `loadSettings()` (il percorso `onLoadSettings`),
+  oltre che in `settingsReset()` e `configurationStoreRead()`.
+  Nota: a oggi **non** è un bug del fork di partenza — nel percorso normale con EEPROM valido
+  `configurationStoreRead()` imposta già `settings_ready` — ma è una difesa in più: se una
+  lettura dell'EEPROM fallisce (EEPROM corrotta), la UI non resterebbe bloccata sul logo Marlin.
 
 ### Altro
 

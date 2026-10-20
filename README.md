@@ -130,19 +130,22 @@ La porta seriale è esclusiva: non usarlo insieme a OctoPrint/Cura.
 
 ---
 
-## ⚠️ Peculiarità della mainboard: il cavo USB "stordisce" il display
+## ⚠️ Peculiarità della mainboard: dopo il flash il display può restare sul logo
 
-Su questa mainboard (LGT KIT V1.0) la linea **DTR** del CH340 è collegata anche al **RX del display DWIN**.
-Se il DTR resta attivo (è il caso dopo un reset via seriale, quindi dopo **qualsiasi** flash con
-`avrdude` o con `flash-lk4pro.py`), il display **non riceve più i comandi** di Marlin e resta fermo
-sulla pagina di boot (logo Marlin), anche se il resto funziona: Marlin parte, la stampante è
-utilizzabile da PC, i touch dal display *eventuali* arrivano (lo screen→Marlin è libero), ma
-**Marlin→display non funziona**.
+**Osservazione** (riproducibile): dopo un reset via seriale — quindi dopo **qualsiasi** flash con
+`avrdude` o con `flash-lk4pro.py` — il display DWIN può **restare fermo sulla pagina di boot**
+(logo Marlin) anche se tutto il resto funziona: Marlin parte, `M115` risponde, la stampante è
+utilizzabile da PC e gli eventi touch dal display *arrivano* (la direzione display→Marlin è libera),
+ma **Marlin→display non funziona** (il display non cambia pagina).
 
-**Soluzione**: stacca (e se necessario riattacca) il cavo USB dopo il flash.
-`flash-lk4pro.py` rilascia già DTR/RTS alla fine ✅, ma per sicurezza conviene staccare il cavo.
+**Causa probabile**: una linea di controllo del CH340 (DTR/RTS) collegata all'UART1 del display,
+lasciata attiva dal tool di programmazione. Il DGUS è su `LCD_SERIAL_PORT 1` e l'USB su
+`SERIAL_PORT 0`, quindi non è un conflitto di porte: è un'interferenza sul segnale.
 
-Sintomo riconoscibile: `M115` risponde e la stampante è viva, ma il display non cambia pagina.
+**Soluzione**: **stacca e riattacca il cavo USB** dopo il flash. `flash-lk4pro.py` rilascia già
+DTR/RTS alla fine ✅, ma se il sintomo persiste il rimedio è scollegare il cavo.
+
+Sintomo riconoscibile: la stampante è viva e risponde da seriale, ma il display non cambia pagina.
 
 ## Nota sul bootloader
 La mainboard usa il bootloader Arduino **stk500v2** standard, ma questo ascolta il primo pacchetto
