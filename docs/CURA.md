@@ -86,9 +86,19 @@ M84
   valore in cui gli spigoli non presentano "orecchie" né increspature.
 
 ### Arc moves (G2/G3)
-`ARC_SUPPORT` è **attivo** nel firmware → in Cura puoi abilitare l'opzione per gli archi
-("Arc support" nelle Preferenze → Printer, la voce sperimentale): si ottengono meno segmenti e
-stampe più leggibili.
+`ARC_SUPPORT` e' **attivo nel firmware**, quindi Marlin interpreta e corregge i comandi `G2`/`G3`.
+
+**Cura pero' non emette archi**: verificato nella sorgente ufficiale di Cura (4.13 e 5.x) non
+esiste alcuna impostazione per generare G2/G3 - Cura spezza ogni curva in segmenti lineari.
+L'opzione "arc" che si vede in qualche guida e' di altri slicer.
+
+Per sfruttare gli archi serve uno slicer che li emetta:
+- **PrusaSlicer** o **OrcaSlicer** (supporto archi nativo, profili Marlin gia' disponibili)
+- valori da usare per la LK4 Pro stock: volume **222 x 222 x 250 mm**, E-steps **92.6**,
+  max feedrate X/Y **300 mm/s**, Z **5 mm/s**, accelerazione **3000 mm/s2**, Z origin front-left.
+
+Con Cura non perdi nulla: `ARC_SUPPORT` resta semplicemente inerte (il firmware e' pronto, ma
+l'input non arriva).
 
 ### Power loss recovery
 Attivalo in Cura (§5): dopo un blackout la stampa riprende da dove si era interrotta.
