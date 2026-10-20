@@ -3,6 +3,21 @@
 Tutte le varianti del firmware per la Longer LK4 Pro stock sono elencate in
 [docs/MODIFICHE-FIRMWARE.md](docs/MODIFICHE-FIRMWARE.md).
 
+## [1.0.1] - 20/10/2026
+
+### Correzione
+
+- **La UI del display si avviava solo con un EEPROM non valido**: dopo il Factory Reset
+  (che rende l'EEPROM valido) il boot passava da `onLoadSettings` → `loadSettings()`, che non
+  impostava `settings_ready` → il display restava **fermo sul logo Marlin** senza avviarsi.
+  Ora `settings_ready` viene impostato anche in quel percorso.
+  (Bug presente nel fork di partenza, non introdotto dalle modifiche di questo repository.)
+
+### Altro
+
+- `update.bat` / `update.sh` scaricano l'asset **più recente per prefisso**
+  (es. `LK4Pro-Stock-Plus-`): non vanno più aggiornati a ogni release.
+
 ## [1.0.0] - 20/10/2026
 
 Prima release pubblica del fork "stock" (basato su
