@@ -239,6 +239,14 @@ void DGUSScreenHandler::loadSettings(const char *buff) {
     ExtUI::setLevelingActive(leveling_active);
 	#endif
   }
+
+  // tx3m - Al boot con un EEPROM valido si passa da loadSettings() e non da
+  // settingsReset(): senza questo settings_ready resta false, il loop della UI
+  // non parte e il display resta fermo sulla pagina di boot (logo Marlin).
+  if (!settings_ready) {
+	settings_ready = true;
+	ready();
+  }
 }
 
 void DGUSScreenHandler::configurationStoreWritten(bool success) {

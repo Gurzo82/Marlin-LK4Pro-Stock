@@ -36,8 +36,8 @@ else
 fi
 
 case "$SCELTA" in
-  1|stock) SCELTA=stock; ASSET="LK4Pro-Stock-V41.hex" ;;
-  2|plus)  SCELTA=plus;  ASSET="LK4Pro-Stock-Plus-V41.hex" ;;
+  1|stock) SCELTA=stock; ASSET="LK4Pro-Stock-" ;;
+  2|plus)  SCELTA=plus;  ASSET="LK4Pro-Stock-Plus-" ;;
   *) echo "SCELTA NON VALIDA. Usa: $0 stock  oppure  $0 plus"; exit 1 ;;
 esac
 echo
@@ -58,9 +58,9 @@ if ! $PY -c "import serial" >/dev/null 2>&1; then
 fi
 
 # ---- firmware: locale o download --------------------------------------------
-HEX="$ROOT/firmware/$ASSET"
-if [ ! -f "$HEX" ]; then
-  echo "  Scarico $ASSET dalla Release di GitHub..."
+HEX="$ROOT/firmware/firmware.hex"
+if true; then
+  echo "  Scarico l'ultimo firmware dalla Release di GitHub..."
   URL=$($PY - "$REPO" "$ASSET" <<'PYEOF'
 import json, sys, urllib.request
 repo, asset = sys.argv[1], sys.argv[2]
@@ -75,7 +75,7 @@ PYEOF
 )
   $PY -c "import urllib.request,sys; urllib.request.urlretrieve('$URL','$HEX')"
 else
-  echo "  Trovato in locale: $ASSET"
+  
 fi
 
 # ---- flash ------------------------------------------------------------------

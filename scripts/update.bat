@@ -43,8 +43,8 @@ if "%VARIANT%"=="" (
 
 if /i "%SCEGLI%"=="1" set "SCEGLI=stock"
 if /i "%SCEGLI%"=="2" set "SCEGLI=plus"
-if /i "%SCEGLI%"=="stock" set "ASSET=LK4Pro-Stock-V41.hex"
-if /i "%SCEGLI%"=="plus" set "ASSET=LK4Pro-Stock-Plus-V41.hex"
+if /i "%SCEGLI%"=="stock" set "ASSET=LK4Pro-Stock-"
+if /i "%SCEGLI%"=="plus" set "ASSET=LK4Pro-Stock-Plus-"
 
 if "%ASSET%"=="" (
   echo.
@@ -72,11 +72,11 @@ if errorlevel 1 (
 )
 
 REM ---- firmware: locale o download dalla Release ------------------------------
-set "HEX=%ROOT%\firmware\%ASSET%"
-if exist "%HEX%" (
-  echo   Trovato gia' in locale: %ASSET%
+set "HEX=%ROOT%\firmware\firmware.hex"
+if not exist "%HEX%" (
+  echo   Uso il file locale firmware.hex
 ) else (
-  echo   Scarico %ASSET% dalla Release di GitHub...
+  echo   Scarico l'ultimo firmware dalla Release di GitHub...
   %PY% "%SCRIPT_DIR%download_firmware.py" %REPO% %ASSET% "%HEX%"
   if errorlevel 1 (
     echo.
