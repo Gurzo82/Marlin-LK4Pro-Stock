@@ -130,8 +130,21 @@ La porta seriale è esclusiva: non usarlo insieme a OctoPrint/Cura.
 
 ---
 
-## Nota sul bootloader
+## ⚠️ Peculiarità della mainboard: il cavo USB "stordisce" il display
 
+Su questa mainboard (LGT KIT V1.0) la linea **DTR** del CH340 è collegata anche al **RX del display DWIN**.
+Se il DTR resta attivo (è il caso dopo un reset via seriale, quindi dopo **qualsiasi** flash con
+`avrdude` o con `flash-lk4pro.py`), il display **non riceve più i comandi** di Marlin e resta fermo
+sulla pagina di boot (logo Marlin), anche se il resto funziona: Marlin parte, la stampante è
+utilizzabile da PC, i touch dal display *eventuali* arrivano (lo screen→Marlin è libero), ma
+**Marlin→display non funziona**.
+
+**Soluzione**: stacca (e se necessario riattacca) il cavo USB dopo il flash.
+`flash-lk4pro.py` rilascia già DTR/RTS alla fine ✅, ma per sicurezza conviene staccare il cavo.
+
+Sintomo riconoscibile: `M115` risponde e la stampante è viva, ma il display non cambia pagina.
+
+## Nota sul bootloader
 La mainboard usa il bootloader Arduino **stk500v2** standard, ma questo ascolta il primo pacchetto
 STK500 per **soltanto ~20-40 ms** dopo il reset: dopo, salta nell'applicazione. `avrdude` aspetta
 ~300 ms prima di parlare, riceve quindi il banner di Marlin (`start`) e fallisce con

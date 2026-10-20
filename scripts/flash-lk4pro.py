@@ -114,6 +114,15 @@ class Bootloader:
         self.seq = 1
 
     def close(self):
+        # Rilascia DTR/RTS: su questa mainboard il DTR del CH340 e' collegato
+        # anche al RX del display DWIN. Se resta attiva (come dopo un reset via
+        # seriale) il display non riceve piu' i comandi di Marlin e resta fermo
+        # sulla pagina di boot. Il cavo USB va comunque staccato per usare il touch.
+        try:
+            self.ser.dtr = False
+            self.ser.rts = False
+        except Exception:
+            pass
         try:
             self.ser.close()
         except Exception:
@@ -216,7 +225,7 @@ def flash(path, port, do_verify=True):
         time.sleep(0.4)
         print(f"  Scritte {pages} pagine in {int(time.time() - t0)}s")
     finally:
-        bl.close()
+        bl.close()   # rilascia DTR/RTS (vedi Bootloader.close)
 
     if do_verify:
         time.sleep(3)
