@@ -16,10 +16,12 @@ set "REPO=Gurzo82/Marlin-LK4Pro-Stock"
 set "SCRIPT_DIR=%~dp0"
 set "ROOT=%SCRIPT_DIR%.."
 set "VARIANT=%~1"
+set "ASSET="
 
 if not exist "%SCRIPT_DIR%flash-lk4pro.py" (
   echo ERRORE: flash-lk4pro.py non trovato in "%SCRIPT_DIR%"
-  pause & exit /b 1
+  pause
+  exit /b 1
 )
 
 echo.
@@ -41,25 +43,25 @@ if "%VARIANT%"=="" (
 
 if /i "%SCEGLI%"=="1" set "SCEGLI=stock"
 if /i "%SCEGLI%"=="2" set "SCEGLI=plus"
-if /i "%SCEGLI%"=="stock" ( set "ASSET=LK4Pro-Stock-V41.hex" ) else (
-  if /i "%SCEGLI%"=="plus" ( set "ASSET=LK4Pro-Stock-Plus-V41.hex" ) else (
-    echo.
-    echo SCELTA NON VALIDA. Usa: update.bat stock  oppure  update.bat plus
-    pause & exit /b 1
-  )
+if /i "%SCEGLI%"=="stock" set "ASSET=LK4Pro-Stock-V41.hex"
+if /i "%SCEGLI%"=="plus" set "ASSET=LK4Pro-Stock-Plus-V41.hex"
+
+if "%ASSET%"=="" (
+  echo.
+  echo SCELTA NON VALIDA. Usa: update.bat stock  oppure  update.bat plus
+  pause
+  exit /b 1
 )
 echo.
 echo   Variante: %SCEGLI%  (%ASSET%)
 
 REM ---- python ---------------------------------------------------------------
-set "PY="
-where py >nul 2>&1 && set "PY=py -3"
-if not defined PY ( where python >nul 2>&1 && set "PY=python" )
-if not defined PY (
+set "PY=python"
+where python >nul 2>&1 || (
   echo.
   echo ERRORE: Python 3 non trovato. Installalo da https://www.python.org/downloads/
-  echo         e riprova (spunta "Add Python to PATH").
-  pause & exit /b 1
+  pause
+  exit /b 1
 )
 
 REM ---- pyserial -------------------------------------------------------------
@@ -69,32 +71,19 @@ if errorlevel 1 (
   %PY% -m pip install --user pyserial
 )
 
-REM ---- scarica il firmware dalla Release --------------------------------------
+REM ---- firmware: locale o download dalla Release ------------------------------
 set "HEX=%ROOT%\firmware\%ASSET%"
-set "NEEDDL=1"
 if exist "%HEX%" (
   echo   Trovato gia' in locale: %ASSET%
-  set "NEEDDL=0"
-)
-
-if "%NEEDDL%"=="1" (
+) else (
   echo   Scarico %ASSET% dalla Release di GitHub...
-  %PY% -c "import urllib.request, json, sys;\
-r=urllib.request.urlopen('https://api.github.com/repos/%REPO%/releases/latest');\
-d=json.load(r);\
-a=[x for x in d['assets'] if x['name'].endswith('%ASSET%')];\
-print(a[0]['browser_download_url']) if a else sys.exit(1)" > "%TEMP%\lk4pro_url.txt"
+  %PY% "%SCRIPT_DIR%download_firmware.py" %REPO% %ASSET% "%HEX%"
   if errorlevel 1 (
     echo.
     echo ERRORE: download non riuscito. Scarica il .hex a mano dalle Release e usa:
     echo         python flash-lk4pro.py percorso\del\file.hex
-    pause & exit /b 1
-  )
-  set /p "URL=" < "%TEMP%\lk4pro_url.txt"
-  %PY% -c "import urllib.request;urllib.request.urlretrieve('%URL%','%HEX%')"
-  if errorlevel 1 (
-    echo ERRORE: download non riuscito.
-    pause & exit /b 1
+    pause
+    exit /b 1
   )
 )
 
@@ -109,11 +98,11 @@ if "%RC%"=="0" (
   echo   AGGIORNAMENTO COMPLETATO
   echo ==========================================================
   echo   Ora, sul display:
-  echo     1. Home (homing)
+  echo     1. Home - oming
   echo     2. Settings -^> EEPROM -^> Factory Reset
   echo     3. Se usi OctoPrint: baudrate 250000
 ) else (
-  echo AGGIORNAMENTO NON COMPLETATO (codice %RC%)
+  echo AGGIORNAMENTO NON COMPLETATO ^(codice %RC%^)
   echo - La stampante era accesa e il cavo USB collegato?
   echo - Riprova: python flash-lk4pro.py "%HEX%"
 )

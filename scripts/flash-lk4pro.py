@@ -27,6 +27,7 @@ import time
 
 try:
     import serial
+    from serial.tools import list_ports
 except ImportError:
     print("Manca pyserial. Installalo con:  pip install pyserial", file=sys.stderr)
     sys.exit(1)
@@ -269,16 +270,20 @@ def main():
     port = args.port
     if not port:
         try:
-            ports = [p.device for p in serial.tools.list_ports.comports()]
+            infos = list(list_ports.comports())
         except Exception:
-            ports = []
-        ch340 = [p for p in ports if "CH340" in p.upper() or "CH341" in p.upper() or "USB-SERIAL" in p.upper()]
+            infos = []
+        # La mainboard usa un CH340: cerca la descrizione, non il nome della porta
+        ch340 = [i.device for i in infos
+                 if any(k in f"{i.description} {i.product} {i.manufacturer}".upper()
+                        for k in ("CH340", "CH341", "USB-SERIAL", "USB SERIAL"))]
         if ch340:
             port = ch340[0]
-        elif len(ports) == 1:
-            port = ports[0]
+        elif len(infos) == 1:
+            port = infos[0].device
         else:
-            print(f"Porte trovate: {ports}\nSpecifica con --port COMx", file=sys.stderr)
+            print(f"Porte trovate: {[i.device for i in infos]}")
+            print("Specifica con --port COMx", file=sys.stderr)
             return 1
     print(f"  Porta   : {port}")
 
