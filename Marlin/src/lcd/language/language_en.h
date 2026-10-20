@@ -975,6 +975,7 @@ namespace LanguageNarrow_en {
   LSTR DGUS_MSG_INVALID_RECOVERY_DATA     = _UxGT("Invalid recovery data");
   LSTR DGUS_MSG_HOMING_REQUIRED           = _UxGT("Homing required");
   LSTR DGUS_MSG_BUSY                      = _UxGT("Busy");
+  LSTR DGUS_MSG_NO_PROBE                  = _UxGT("No probe connected");
   LSTR DGUS_MSG_HOMING                    = _UxGT("Homing...");
   LSTR DGUS_MSG_FW_OUTDATED               = _UxGT("DWIN GUI/OS update required");
   LSTR DGUS_MSG_ABL_REQUIRED              = _UxGT("Auto bed leveling required");

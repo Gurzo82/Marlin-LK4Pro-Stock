@@ -274,17 +274,26 @@ const struct DGUS_VP vp_list[] PROGMEM = {
   // VP_HELPER(DGUS_Addr::LEVEL_AUTO_Grid, sizeof(int16_t) * DGUS_LEVEL_GRID_SIZE, VPFLAG_NONE, nullptr, nullptr, &DGUSTxHandler::ablGrid),
   VP_HELPER(DGUS_Addr::SP_LEVEL_AUTO_Grid, 2, VPFLAG_NONE, nullptr, nullptr, &DGUSTxHandler::ablGridColor),
 #else
+  #if ENABLED(LKPRO_ZOFFSET_UI)
+    // Macchina SENZA sonda: l'offset Z e' l'home offset (M206 Z).
+    VP_HELPER_TX_AUTO(DGUS_Addr::LEVEL_OFFSET_Current,
+                        &motion.home_offset.z,
+                        (&DGUSTxHandler::extraToFixedPoint<float, 2>)),
+  #else
     VP_HELPER_TX_AUTO(DGUS_Addr::LEVEL_OFFSET_Current,
                         &DGUSScreenHandler::baby_offset,
                         (&DGUSTxHandler::extraToFixedPoint<float, 2>)),
+  #endif
 #endif
 
+#if HAS_LEVELING
   VP_HELPER_TX_EXTRA(DGUS_Addr::LEVEL_PROBING_Icons1,
                      &DGUSScreenHandler::probing_icons[0],
                      &DGUSTxHandler::extraToInteger<uint16_t>),
   VP_HELPER_TX_EXTRA(DGUS_Addr::LEVEL_PROBING_Icons2,
                      &DGUSScreenHandler::probing_icons[1],
                      &DGUSTxHandler::extraToInteger<uint16_t>),
+#endif
 
   VP_HELPER_TX(DGUS_Addr::FILAMENT_ExtruderIcons, &DGUSTxHandler::filamentIcons),
   VP_HELPER_TX_EXTRA(DGUS_Addr::FILAMENT_Length,

@@ -1,183 +1,200 @@
-<p align="center"><img src="buildroot/share/pixmaps/logo/marlin-outrun-nf-500.png" height="200" alt="Marlin logo" /></p>
+# Marlin firmware per Longer LK4 Pro **stock** (senza BLTouch)
 
-<h1 align="center">Marlin for the Longer LK4 Pro (DWIN touch screen)</h1>
+> Fork di **[tx3m/Marlin-LK4Pro](https://github.com/tx3m/Marlin-LK4Pro)** (a sua volta fork di
+> [MarlinFirmware/Marlin](https://github.com/MarlinFirmware/Marlin), ramo `bugfix-2.1.x`).
+> Tutte le modifiche rispetto all'upstream sono elencate in **[docs/MODIFICHE-FIRMWARE.md](docs/MODIFICHE-FIRMWARE.md)**.
 
-<p align="center">
-  <a href="/LICENSE"><img alt="GPL-V3.0 License" src="https://img.shields.io/github/license/marlinfirmware/marlin.svg"></a>
-</p>
+[![Licenza](https://img.shields.io/badge/licenza-GPL--3.0-blue.svg)](LICENSE)
+![Firmware](https://img.shields.io/badge/firmware-Marlin%202.1.x-green.svg)
+![Schermo](https://img.shields.io/badge/UI-DWIN%20Reloaded-blue.svg)
 
-This is [Marlin](https://github.com/MarlinFirmware/Marlin) for the **Longer LK4 Pro** with its original LGT
-mainboard and DWIN touch screen. Longer's stock firmware is based on a much older Marlin. This one tracks Marlin's
-current `bugfix-2.1.x` development branch, and comes with a redesigned touch screen firmware driven by Marlin's
-DGUS Reloaded screen driver.
+---
 
-It builds on years of community work: Guizz27's original LK4/LK5 Pro port and screen design, jgbrown54's update to
-Marlin 2.1.2.1 and screen redesign, and this fork's port to current Marlin (see [Credits](#credits)).
+## Il problema
 
-> **Use at your own risk.** Flashing firmware can leave a printer unusable until it is flashed again.
-> The configuration contains values for the author's own printer (see [Configuration](#configuration)), so check them
-> before printing.
+Il firmware [tx3m/Marlin-LK4Pro](https://github.com/tx3m/Marlin-LK4Pro) è ottimo, ma è tarato su una
+LK4 Pro **con BLTouch** (l'autore ha montato la sonda). Sulla **LK4 Pro di serie, senza sonda**, quel
+firmware:
 
-The firmware version (`V<N>`) is set automatically from git when building (see [Building](#building)).
+| Sintomo | Causa |
+|---|---|
+| `Error:!! STOP called because of BLTouch error` → la stampante si blocca all'avvio | il pin del finecorsa Z viene letto come sonda BLTouch, con polarità invertita |
+| L'homing Z non trova mai il finecorsa | idem: la "sonda" non risponde |
+| Il menu **Leveling** / **Assisted** non fa nulla | nel ramo "senza sonda" (mai compilato da nessuno) c'erano bug |
+| L'estrusore si muove in modo strano | configurato come `TMC2208`, mentre la macchina stock ha un **A4988** |
+| Estrazione e velocità fuori rispetto a com'erano in fabbrica | i parametri di movimento erano quelli della stampante dell'autore |
 
-## Branches
+In più: **su questa mainboard `avrdude` non riesce a flashare** (vedi [Nota sul bootloader](#nota-sul-bootloader)).
 
-| Branch | Contents |
-| --- | --- |
-| `lk4pro` | The LK4 Pro firmware (default branch). |
-| `bugfix-2.1.x` | Unmodified copy of official Marlin, used to bring in upstream updates. |
+Questo repository rende il firmware **utilizzabile al 100% su una LK4 Pro stock**, con i parametri
+motori identici a quelli di fabbrica e tre strumenti nuovi.
 
-## Requirements
+---
 
-- Longer LK4 Pro with the LGT mainboard. An LK5 Pro option exists in `Configuration.h` but is untested.
-- Pick the firmware file that matches your extruder driver: `LK4Pro` for the stock driver, `LK4Pro-SilentE` if you
-  replaced it with a silent TMC2208.
-- The DWIN touch screen with the **matching screen firmware**: [tx3m/DWIN_LK4Pro](https://github.com/tx3m/DWIN_LK4Pro).
-  The screen and printer firmware must be updated together.
-- Screens labelled "TL5", "DWJT" or "DWJTB" in their About screen can't be updated with this screen firmware.
-- Optional: BLTouch (`LKPro_BLTOUCH`) for automatic bed leveling.
+## Le due varianti del firmware
 
-## Compared with the stock firmware
+| Variante | File | Include |
+|---|---|---|
+| **Stock** | `LK4Pro-Stock-V41.hex` | correzioni essenziali per la LK4 Pro **di serie**: BLTouch disabilitato, driver estrusore **A4988**, steps/feedrate **identici al factory**, fix del codice DGUS (menu Leveling funzionante, "Auto level" bloccato con messaggio) |
+| **Plus** | `LK4Pro-Stock-Plus-V41.hex` | tutto Stock **+** Z-offset regolabile dal display **+** log diagnostico su SD card (`M9000`) |
 
-**Newer Marlin features enabled in this configuration:**
+La differenza è una riga di configurazione:
 
-- Linear Advance (pressure advance), adjustable from the screen.
-- Bilinear auto bed leveling with BLTouch, Z safe homing, and Z offset babystepping while printing.
-- Park on pause with host prompts (OctoPrint), filament runout sensor, power-loss recovery.
-- Arc moves (`G2`/`G3`), bed PID, print statistics, automatic temperature reports to the host.
-- Input shaping is supported by this Marlin version, but not enabled in this configuration.
-
-**Touch screen firmware:** a full redesign of Longer's original screens, started by Guizz27 and extended by
-jgbrown54 and in this fork. See the screen firmware repository for screenshots.
-
-## Touch screen features
-
-- Print from SD card with progress, elapsed time, Z height, speed and fan display.
-- **Pause / Resume / Abort** that work with Marlin's park-on-pause:
-  - Pause parks the nozzle (back left) and shows the **Resume** button.
-  - Abort while paused stops the print properly: heaters off, no power-loss prompt afterwards, and the screen shows
-    "Print Aborted" with the elapsed time.
-  - A pause from OctoPrint is shown on the screen (needs the scripts below).
-- Auto bed leveling with the measured values shown on the grid (5×5 with BLTouch, otherwise 3×3), Z offset
-  (0.1 / 0.01 mm) and babystepping while printing.
-- Advanced settings: steps/mm, jerk, junction deviation, linear advance, accelerations and maximum speeds.
-- EEPROM save / restore / factory reset, filament runout sensor on/off, PID tuning, filament load/unload,
-  power-loss recovery, screen brightness and volume.
-
-## Building
-
-1. Install [Visual Studio Code](https://code.visualstudio.com/) with the
-   [PlatformIO](https://platformio.org/) extension.
-2. Clone this repository and open it in VS Code:
-   ```
-   git clone https://github.com/tx3m/Marlin-LK4Pro.git
-   ```
-3. Check the settings in `Marlin/Configuration.h` (see below).
-4. Build with the PlatformIO **Build** button or `pio run`. This builds two firmware files:
-
-   | Environment | Extruder driver | File, e.g. |
-   | --- | --- | --- |
-   | `LK4Pro` | Stock A4988 | `.pio/build/LK4Pro/bugfix-2.1.x_V29_LK4Pro.hex` |
-   | `LK4Pro_SilentE` | Replaced with a silent TMC2208 | `.pio/build/LK4Pro_SilentE/bugfix-2.1.x_V29_LK4Pro-SilentE.hex` |
-
-   Use `pio run -e LK4Pro` or `pio run -e LK4Pro_SilentE` to build only one.
-   A copy of every build is also kept in `.pio/firmware/`, so older versions stay available for comparison.
-
-The version number comes from git: the newest `v<N>` tag plus the number of commits on this branch since then.
-Merging official Marlin counts as one commit. A build with uncommitted changes gets `-dev` added (e.g. `V29-dev`).
-Without git, for example from a downloaded ZIP, the `LKPro_FW_VERSION` fallback in `Configuration.h` is used.
-The setup is in `ini/lk4pro.ini` and `buildroot/share/PlatformIO/scripts/lk4pro_version.py`.
-
-## Flashing
-
-- **Printer:** flash `firmware.hex` over USB, for example with PlatformIO's **Upload** or OctoPrint's Firmware Updater
-  plugin. Do a factory reset from the screen afterwards (Settings → EEPROM), as new versions can change the stored
-  settings.
-- **Screen:** copy the `DWIN_SET` folder of the matching screen firmware to the root of a FAT32 SD card
-  (32 GB or smaller, 4096-byte allocation unit), insert it into the screen's own card slot and power on. Full
-  instructions come with the screen firmware.
-
-## Configuration
-
-The options at the top of `Marlin/Configuration.h` select the printer:
-
-| Option | Meaning |
-| --- | --- |
-| `LGT_MAC` | LK4/LK5 Pro family with the LGT mainboard. Keep enabled. |
-| `LK4_Pro` / `LK5_Pro` | Printer model. `LK4_Pro` is the default. |
-| `LKPro_BLTOUCH` | Enable if a BLTouch is fitted. |
-| `LKPro_SILENT_E_DRIVER` | Enable if the extruder's A4988 driver was replaced with a silent TMC2208 (set automatically by `LK4Pro_SilentE`). If the extruder then runs backwards, set `INVERT_E0_DIR` to `false` or turn the motor plug around. |
-| `LKPro_FW_VERSION` | Version text shown on the screen. |
-
-Values tuned for the author's printer that you should check on yours:
-
-- `DEFAULT_AXIS_STEPS_PER_UNIT` is `{ 79.5, 80, 405, 145 }` (stock LK4 Pro: `{ 80, 80, 400, 96 }`).
-- `BAUDRATE` is `250000`, so set your host (e.g. OctoPrint) to 250000 baud.
-
-`Marlin/Config-export.h` lists all active settings in one short file, which is handy for comparing configurations.
-
-## OctoPrint
-
-When a print is streamed from OctoPrint, pausing in OctoPrint only runs OctoPrint's own scripts. These scripts park
-the nozzle like the screen does, and tell the printer about the pause so the screen shows it. They assume the slicer
-uses relative extrusion (`M83`).
-
-Add them under **OctoPrint Settings → GCODE Scripts**:
-
-**After print job is paused**
-```
-{% if pause_position.x is not none %}
-G91                 ; relative moves
-G1 E-5 F2400        ; retract
-G90                 ; absolute XYZ (this also sets E to absolute)
-M83                 ; E back to relative, like the slicer
-G27                 ; park like the screen: back left, Z at least 20 mm
-M76                 ; pause the print timer: the screen shows "Print Paused" and Resume
-{% endif %}
+```ini
+[env:LK4Pro_Plus]
+extends       = env:LK4Pro
+build_flags   = ${common_avr8.build_flags} -DLKPRO_ZOFFSET_UI -DSD_DIAG_LOG
 ```
 
-**Before print job is resumed**
-```
-{% if pause_position.x is not none %}
-G90                 ; absolute XYZ
-M83                 ; relative E, like the slicer
-G1 E10 F300         ; at the park position: undo the retract and purge 5 mm
-G1 E-1 F2400        ; small retract for the move back
-G1 X{{ pause_position.x }} Y{{ pause_position.y }} F6000
-G1 Z{{ pause_position.z }} F600
-G1 E1 F2400         ; undo the small retract
-{% if pause_position.f is not none %}G1 F{{ pause_position.f }}{% endif %}
-M75                 ; resume the print timer
-{% endif %}
+> Se non sei sicuro: **"Plus"** è la versione più completa, "Stock" è la più sobria.
+
+---
+
+## Avvio rapido
+
+**1.** Scarica questo repository (o clona):
+```bash
+git clone https://github.com/Gurzo82/Marlin-LK4Pro-Stock.git
 ```
 
-**After print job is cancelled**
+**2.** Collega la stampante al PC con il cavo **micro-USB** e accendila.
+
+> ⚠️ **Isola il pin 5V/VCC** del cavo USB con nastro adesivo (istruzione ufficiale Longer): la mainboard
+> è alimentata dalla stampante, l'USB non deve alimentarla.
+
+**3.** Lancia lo script di aggiornamento:
+
+| Sistema | Comando |
+|---|---|
+| Windows | doppio click su `scripts\update.bat` (sceglie la variante) |
+| Linux / macOS | `bash scripts/update.sh` (sceglie la variante) |
+
+Lo script **scarica l'ultimo firmware già compilato** dalle Release, lo carica sulla stampante e
+verifica l'installazione. Non serve PlatformIO né Arduino IDE.
+
+Requisiti: **Python 3.8+** e `pyserial` (`pip install pyserial`).
+
+Se preferisci caricare un file specifico:
+```bash
+python scripts/flash-lk4pro.py firmware/LK4Pro-Stock-Plus-V41.hex
+python scripts/flash-lk4pro.py --port COM5            # porta specifica
 ```
-G91                 ; relative moves
-G1 E-2 F2400        ; retract while the nozzle is still hot
-G1 Z10 F600         ; lift 10 mm
-G90                 ; absolute XYZ
-M84                 ; disable motors
-{% snippet 'disable_hotends' %}
-{% snippet 'disable_bed' %}
-M106 S0             ; fan off
+
+---
+
+## Firmware dello **schermo** (DWIN)
+
+Il nuovo firmware del display va installato **separatamente** e **insieme** a questo firmware
+(schermo e firmware devono essere abbinati).
+
+1. micro SD **≤ 32 GB**, formattata **FAT32** con **4096 byte** di unità di allocazione
+   (`format X: /FS:FAT32 /Q /A:4096`)
+2. Copia la cartella **`DWIN_SET`** (in `dwin/DWIN_SET.zip`) nella **radice** della SD
+3. Stampante **spenta** → inserisci la SD nello slot **dietro il display** → accendi
+4. Attendi **"SD CARD PROCESS... END!"** → spegni, togli la SD, riaccendi
+
+> I display con versione "TL5", "DWJT" o "DWJTB" **non** sono compatibili.
+
+---
+
+## Cosa cambia rispetto all'upstream
+
+| Area | Upstream | Qui |
+|---|---|---|
+| BLTouch | attivo (blocca la stampante stock) | **disabilitato** → homing Z meccanico sul pin 35 |
+| Driver estrusore | `TMC2208_STANDALONE` | **`A4988`** (come la macchina stock) |
+| Steps/mm | `80 80 400 **96**` | `80 80 400 **92.6**` (identico al firmware factory Longer) |
+| Max feedrate | `500 500 20 60` | **`300 300 5 25`** (identico al factory) |
+| Menu Leveling | non funziona | funziona: *Assisted* (guida manuale 5 punti), *Z offset* reale, *Auto level* bloccato con messaggio |
+| Offset Z | solo con sonda (inerto) | **regolabile dal display** (home offset `M206 Z`, salvato in EEPROM) |
+| Log diagnostico | — | **`M9000`** → CSV su SD (posizione, feedrate, temperature) |
+| Dashboard PC | — | **`scripts/lk4pro-monitor.py`** (live + CSV) |
+| Flash | avrdude (non funziona qui) | **`scripts/flash-lk4pro.py`** (protocollo STK500v2 diretto) |
+
+Dettaglio completo: **[docs/MODIFICHE-FIRMWARE.md](docs/MODIFICHE-FIRMWARE.md)**.
+
+### Funzionalità nuove in dettaglio
+
+**Z-offset dal display** — su una macchina senza sonda l'offset sonda (`M851`) è inerte: qui il firmware
+usa l'**home offset `M206 Z`**, che viene salvato in EEPROM e applicato a ogni homing.
+Procedura: *Home* → foglio di carta sul letto → *Move → Z* a passi di 0,1 mm fino al contatto →
+*Leveling → Z offset* → imposta il valore → *Home* di nuovo.
+
+**Log su SD card** (`M9000 S1` / `M9000` / `M9000 S0`) — scrive `LK4LOG<n>.csv` con
+`t_ms, X, Y, Z, feedrate, T_hotend, T_bed` a 4 Hz. Si rifiuta di partire durante una stampa
+(scrivere sulla SD in stampa può corromperla).
+
+**Dashboard PC** (`scripts/lk4pro-monitor.py`) — posizione, feedrate, temperature e ultime
+notifiche in tempo reale; `--csv` salva i campioni con timestamp.
+La porta seriale è esclusiva: non usarlo insieme a OctoPrint/Cura.
+
+---
+
+## Nota sul bootloader
+
+La mainboard usa il bootloader Arduino **stk500v2** standard, ma questo ascolta il primo pacchetto
+STK500 per **soltanto ~20-40 ms** dopo il reset: dopo, salta nell'applicazione. `avrdude` aspetta
+~300 ms prima di parlare, riceve quindi il banner di Marlin (`start`) e fallisce con
+`not in sync: resp=0x73` (`0x73` = 's' di "start").
+
+`scripts/flash-lk4pro.py` parla direttamente il protocollo STK500v2: entra nel bootloader e invia
+subito `SIGN_ON`, poi scrive le pagine da 256 byte (`SPM_PAGESIZE` dell'ATmega2560).
+È lo stesso protocollo usato da Cura/Longer Slicer, solo sincronizzato sul tempo giusto.
+
+> Nota sul protocollo STK500v2, se vuoi implementarlo tu:
+> il checksum è `MESSAGE_START ^ seq ^ len ^ TOKEN ^ body` (**incluso 0x1B**), il body del messaggio
+> **inizia dal byte del comando** e la risposta **echoa il comando**: lo status è `body[1]`, non `body[0]`.
+
+---
+
+## Compilare dal sorgente
+
+```bash
+# 1. toolchain
+pip install platformio
+pio pkg install -g -t tool-avrdude
+
+# 2. build
+pio run -e LK4Pro            # build
+pio run -e LK4Pro_SilentE    # build con estrusore TMC2208 silenzioso
 ```
 
-## Credits
+Il numero di versione (`V<N>`) viene calcolato automaticamente da git. L'archivio delle build sta in
+`.pio/firmware/`.
 
-| Who | Contribution |
-| --- | --- |
-| [MarlinFirmware](https://github.com/MarlinFirmware/Marlin) | Marlin, including the DGUS Reloaded screen driver. |
-| [Guizz27](https://github.com/Guizz27) | The original LK4/LK5 Pro port of Marlin 2 ([Marlin---Longer-LKx-Pro](https://github.com/Guizz27/Marlin---Longer-LKx-Pro)) and the screen firmware design ([DWIN_LK4Pro](https://github.com/Guizz27/DWIN_LK4Pro)), replacing Longer's original screens. Includes the advanced settings, EEPROM, runout control, PID and G-code entry screens. |
-| [jgbrown54](https://github.com/jgbrown54) | Update to Marlin 2.1.2.1 ("JGB2.2B"). Reworked the screen firmware to match Marlin's DGUS Reloaded layout: separate Pause / Resume / Abort buttons, new bed leveling grid, redesigned home, print status, move, filament, advanced settings and runout screens, a new G-code keyboard ([DWIN_LK4Pro #22](https://github.com/Guizz27/DWIN_LK4Pro/issues/22)), status messages on more screens, and EEPROM save / restore messages. |
-| [tx3m](https://github.com/tx3m) | Port to current Marlin `bugfix-2.1.x`: screen address fixes, pause / resume / abort rework, OctoPrint pause integration, bed leveling view and Z offset fixes. |
+Il CI (`.github/workflows/build.yml`) compila il firmware a ogni push e pubblica il `.hex` nelle Release.
 
-## Bugs and questions
+---
 
-Please use this repository's [Issues](https://github.com/tx3m/Marlin-LK4Pro/issues) for problems with this firmware,
-not Marlin's issue tracker. Fixes that apply to all printers are sent to official Marlin as separate pull requests.
+## Struttura del repository
 
-## License
+```
+.
+├── Marlin/                 sorgente Marlin (fork di MarlinFirmware/Marlin)
+├── buildroot/  ini/  platformio.ini
+├── scripts/
+│   ├── flash-lk4pro.py     flash via protocollo STK500v2 (standalone)
+│   ├── update.bat/.sh      scarica l'ultimo firmware dalla Release e lo carica
+│   ├── lk4pro-monitor.py   dashboard diagnostica
+│   └── build.ps1/.sh       build da sorgente
+├── firmware/               firmware precompilato
+├── dwin/                   firmware dello schermo (DWIN_SET.zip)
+└── docs/                   MODIFICHE-FIRMWARE.md, DESIGN.md
+```
 
-Marlin is published under the [GPL v3 license](/LICENSE), and so is this fork. You may use, modify and share it, but
-any firmware you distribute must come with its source code. Pointing people to this repository satisfies that.
+---
+
+## Crediti
+
+- **[tx3m/Marlin-LK4Pro](https://github.com/tx3m/Marlin-LK4Pro)** — il fork da cui questo nasce
+  (UI DWIN ridisegnata, adattamento alla LK4 Pro)
+- **[Guizz27/Marlin---Longer-LKx-Pro](https://github.com/Guizz27/Marlin---Longer-LKx-Pro)** e
+  **[Guizz27/DWIN_LK4Pro](https://github.com/Guizz27/DWIN_LK4Pro)** — port originale e UI
+- **[jgbrown54](https://github.com/jgbrown54)** — aggiornamento a Marlin 2.1.2.1 e redesign dei menu
+- **[MarlinFirmware/Marlin](https://github.com/MarlinFirmware/Marlin)** — Marlin `bugfix-2.1.x`
+- **Longer3D** — hardware, firmware stock e materiale originale (GPL-3.0)
+
+## Licenza
+
+GPL-3.0, come Marlin e come il fork di partenza. Vedi [LICENSE](LICENSE).
+I file distribuiti con questa licenza devono mantenere la stessa licenza e la stessa fonte.

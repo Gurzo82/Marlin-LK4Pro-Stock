@@ -73,7 +73,14 @@
 #define LGT_MAC //  For Alphawise and Longer U30 pro LK4/LK5 pro
 #define LK4_Pro //  for LK4pro
 //#define LK5_Pro //  for LK5pro
-#define LKPro_BLTOUCH // for LK4 and LK5
+//#define LKPro_BLTOUCH // for LK4 and LK5  (disabilitato: questa stampante non ha il BLTouch)
+
+// La UI DGUS Reloaded di Marlin richiede una sonda (BLTouch) e il mesh leveling.
+// Su una LK4 Pro stock SENZA BLTouch la sonda non esiste: con questa opzione i due
+// requisiti vengono rimossi. L'homing Z usa il finecorsa meccanico (pin 35) e il
+// G29 (auto leveling) non e' disponibile. Le schermate legate alla sonda non
+// funzioneranno, tutto il resto della UI e' operativo.
+#define DGUS_LCD_UI_RELOADED_NO_PROBE
 
 // tx3m - Extruder (E) driver. The stock LK4 Pro has an A4988 for E and silent TMC2208 drivers for X/Y/Z.
 // Enable if the E driver was replaced with a silent TMC2208. env:LK4Pro_SilentE enables it automatically.
@@ -198,7 +205,7 @@
 //#define V_DRIVER_TYPE  A4988
 //#define W_DRIVER_TYPE  A4988
 #if ENABLED(LKPro_SILENT_E_DRIVER)
-  #define E0_DRIVER_TYPE TMC2208_STANDALONE  // tx3m - Replaced with a silent driver
+  #define E0_DRIVER_TYPE A4988  // stock LK4 Pro: A4988 per l'estrusore (TMC2208 solo con env LK4Pro_SilentE)
 #else
   #define E0_DRIVER_TYPE A4988               // LK4 Pro stock
 #endif
@@ -1398,7 +1405,7 @@
  * Override with M92 (when enabled below)
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 79.5, 80, 405, 145 }  // for LK4 pro tx3m { 80, 80, 400, 96 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 92.6 }  // valori factory Longer LK4 Pro (M503 del firmware stock: E=92.60)
 
 /**
  * Enable support for M92. Disable to save at least ~530 bytes of flash.
@@ -1410,7 +1417,7 @@
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 5*100, 5*100, 20, 60 }  // tx3m
+#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }  // valori factory Longer LK4 Pro (M503 del firmware stock: X300 Y300 Z5 E25)
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -1971,7 +1978,7 @@
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #define INVERT_X_DIR true  //  For Alphawise and Longer U30 pro LK4 pro
 #define INVERT_Y_DIR false //  For Alphawise and Longer U30 pro LK4 pro
-#define INVERT_Z_DIR true  //  For Alphawise and Longer U30 pro LK4 pro
+#define INVERT_Z_DIR true  //  For Alphawise and Longer U30 pro LK4 pro  (valore originale del fork: con Z+ il carro sale)
 //#define INVERT_I_DIR false
 //#define INVERT_J_DIR false
 //#define INVERT_K_DIR false

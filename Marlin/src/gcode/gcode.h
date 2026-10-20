@@ -1364,6 +1364,10 @@ private:
     static void M1004();
   #endif
 
+  #if ENABLED(SD_DIAG_LOG)
+    static void M9000();
+  #endif
+
   #if ENABLED(HAS_MCP3426_ADC)
     static void M3426();
   #endif

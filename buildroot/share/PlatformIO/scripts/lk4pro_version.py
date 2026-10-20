@@ -55,6 +55,10 @@ if pioutil.is_pio_build():
     if silent_e: model += '-SilentE'
     # Input shaping: enabled in Configuration_adv.h
     if config_value('Marlin/Configuration_adv.h', r'^\s*#define\s+(INPUT_SHAPING_[XYZ])\b', None): model += '-IS'
+    # Variante "Plus" (env:LK4Pro_Plus): Z-offset dal display + log diagnostico su SD
+    plus = 'LKPRO_ZOFFSET_UI' in str(env.GetProjectOption('build_flags', '')) \
+        or 'SD_DIAG_LOG' in str(env.GetProjectOption('build_flags', ''))
+    if plus: model += '-Plus'
     hex_name = f'{marlin_version}_{version}_{model}.hex'
 
     def copy_hex(source, target, env):

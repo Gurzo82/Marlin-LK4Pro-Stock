@@ -289,6 +289,7 @@ void DGUSTxHandler::ablDisableIcon(DGUS_VP &vp) {
 }
 
 void DGUSTxHandler::ablGrid(DGUS_VP &vp) {
+#if HAS_LEVELING
   // Batch send
   int16_t data[DGUS_LEVEL_GRID_SIZE];
   xy_uint8_t point;
@@ -305,9 +306,11 @@ void DGUSTxHandler::ablGrid(DGUS_VP &vp) {
   }
   DEBUG_ECHOLNPGM("sending byte count ", sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
   dgus.write((uint16_t)vp.addr, data, sizeof(*data) * DGUS_LEVEL_GRID_SIZE);
+#endif
 }
 
 void DGUSTxHandler::ablGridColor(DGUS_VP& vp) {
+#if HAS_LEVELING
   // Set color for each value
   for (int point = 0; point < DGUS_LEVEL_GRID_SIZE; point++)     {
     uint16_t color = Swap16(COLOR_WHITE);
@@ -316,6 +319,7 @@ void DGUSTxHandler::ablGridColor(DGUS_VP& vp) {
     }
     dgus.write((uint16_t)vp.addr + point * DGUS_SP_VARIABLE_LEN + (int)DGUS_SP_Variable::COLOR, color);
   }
+#endif
 }
 
 void DGUSTxHandler::filamentIcons(DGUS_VP &vp) {
