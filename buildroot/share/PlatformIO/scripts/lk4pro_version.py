@@ -53,6 +53,8 @@ if pioutil.is_pio_build():
     silent_e = 'LKPro_SILENT_E_DRIVER' in str(env.GetProjectOption('build_flags', '')) \
             or config_value('Marlin/Configuration.h', r'^\s*#define\s+(LKPro_SILENT_E_DRIVER)\b', None)
     if silent_e: model += '-SilentE'
+    # Input shaping: enabled in Configuration_adv.h
+    if config_value('Marlin/Configuration_adv.h', r'^\s*#define\s+(INPUT_SHAPING_[XYZ])\b', None): model += '-IS'
     hex_name = f'{marlin_version}_{version}_{model}.hex'
 
     def copy_hex(source, target, env):
