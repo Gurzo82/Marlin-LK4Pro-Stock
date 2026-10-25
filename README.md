@@ -37,6 +37,14 @@ The firmware version (`V<N>`) is set automatically from git when building (see [
 - Screens labelled "TL5", "DWJT" or "DWJTB" in their About screen can't be updated with this screen firmware.
 - Optional: BLTouch (`LKPro_BLTOUCH`) for automatic bed leveling.
 
+> **LK4 Pro without BLTouch:** this configuration is written for a printer *with* the probe, and the DGUS
+> touch screen's Leveling menu needs it (bed mesh + Z offset babystepping). On a **stock LK4 Pro, which has
+> no probe**, the screen firmware still works, but the Leveling menu has to be used for manual leveling and
+> "Auto level" can't do anything. A configuration adapted to the stock printer (probe disabled, factory
+> axis steps and feedrates, manual leveling) is available in
+> [Gurzo82/Marlin-LK4Pro-Stock](https://github.com/Gurzo82/Marlin-LK4Pro-Stock), together with prebuilt
+> firmware and a one-command updater.
+
 ## Compared with the stock firmware
 
 **Newer Marlin features enabled in this configuration:**
